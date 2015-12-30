@@ -5,7 +5,7 @@ if [ "${EUID}" -ne 0 ]; then
    exit 1
 fi
 
-# gets the progress of a running SMART test as a string, or outputs nothing if
+# Gets the progress of a running SMART test as a string, or outputs nothing if
 # no test is currently running.
 function get_smart_progress {
   local drive="${1}"
@@ -16,7 +16,7 @@ function get_smart_progress {
     sed 's/\.$//'
 }
 
-# run a SMART test in offline mode and wait until it's done, printing remaining
+# Run a SMART test in offline mode and wait until it's done, printing remaining
 # progress every minute.
 function smart_test {
   local drive="${1}"
@@ -25,7 +25,7 @@ function smart_test {
   echo "Running ${test_name} SMART test on $(date):"
   smartctl --test=${test_name} "${drive}"
 
-  # wait for the progress remaining to disappear, signaling the end of the test
+  # Wait for the progress remaining to disappear, signaling the end of the test.
   local result="NONEMPTY"
   while [ -n "${result}" ]; do
     result="$(get_smart_progress "${drive}")"
@@ -35,7 +35,7 @@ function smart_test {
   done
 }
 
-# run a succession of SMART tests and badblocks on a drive, and output the final
+# Run a succession of SMART tests and badblocks on a drive, and output the final
 # results when complete.
 function burnin {
   local drive=$1
@@ -84,5 +84,5 @@ if [ -z "${1}" ]; then
   exit 1
 fi
 
-# run the burn-in and see how long it takes, just for fun
+# Run the burn-in and see how long it takes, just for fun.
 time burnin "${1}"
