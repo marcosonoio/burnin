@@ -8,9 +8,9 @@ fi
 # Gets the progress of a running SMART test as a string, or outputs nothing if
 # no test is currently running.
 function get_smart_progress {
-  local drive="${1}"
+  local device="${1}"
 
-  smartctl -a "${drive}" | \
+  smartctl -a "${device}" | \
     grep 'of test remaining' | \
     sed 's/^[[:blank:]]*//' | \
     sed 's/\.$//'
@@ -20,95 +20,95 @@ function get_smart_progress {
 function randomize {
   local device="${1}"
 
-   cat /dev/zero \
-     | openssl enc \
-       -aes-256-ctr \
-       -nosalt \
-       -pass "pass:$(dd if=/dev/urandom bs=128 count=1 2> /dev/null | base64)" \
-     | dd status=progress bs=64K of="${device}"
+  cat '/dev/zero' \
+    | openssl enc \
+        -aes-256-ctr \
+        -nosalt \
+        -pass "pass:$(dd if=/dev/urandom bs=128 count=1 2> /dev/null | base64)" \
+    | dd \
+        status=progress \
+        bs=64K \
+        of="${device}"
 }
 
 # Run a SMART test in offline mode and wait until it's done, printing remaining
 # progress every minute.
 function smart_test {
-  local drive="${1}"
-  local test_name="${2}"
+  local test_name="${1}"
+  local device="${2}"
 
-  echo "Running ${test_name} SMART test on $(date):"
-  smartctl --test=${test_name} "${drive}"
+  smartctl --test="${test_name}" "${device}"
 
   # Wait for the progress remaining to disappear, signaling the end of the test.
-  local result="NONEMPTY"
+  local result="Running '${test_name}' SMART test on $(date)"
   while [ -n "${result}" ]; do
-    result="$(get_smart_progress "${drive}")"
-
-    echo "> ${result}"
+    echo "${result}"
     sleep 60
+    result="$(get_smart_progress "${device}")"
   done
 }
 
-# Run a succession of SMART tests and badblocks on a drive, and output the final
-# results when complete.
+# Run a succession of SMART tests and badblocks on a device, and output the
+# final results when complete.
 function burnin {
-  local drive=$1
+  local device="${1}"
 
   echo
-  echo "Starting burn-in test for ${drive} on $(date):"
+  echo "Starting burn-in test for ${device} on $(date)"
 
   echo
-  echo "Aborting any running SMART tests on ${drive}:"
-  smartctl -X "${drive}"
+  echo "Aborting any running SMART tests on ${device}"
+  smartctl -X "${device}"
 
   echo
-  echo "Current SMART status for ${drive}:"
-  smartctl -a "${drive}"
+  echo "Current SMART status for ${device}:"
+  smartctl -a "${device}"
 
   echo
   echo "Putting kernel in raw mode"
   sysctl kern.geom.debugflags=0x10
 
   echo
-  smart_test "${drive}" "short"
+  smart_test 'short' "${device}"
 
   echo
-  smart_test "${drive}" "conveyance"
+  smart_test 'conveyance' "${device}"
 
   echo
-  smart_test "${drive}" "long"
+  smart_test 'long' "${device}"
 
-  # # This section runs a _destructive_ write/read test on the drive, exercising
+  # # This section runs a _destructive_ write/read test on the device, exercising
   # # its memory cells and attempting to cause an early failure.
   # echo
   # echo "Running destructive badblocks test on $(date):"
-  # badblocks -ws "${drive}"
+  # badblocks -ws "${device}"
 
-  # # This section prepares the drive for later encryption. We write three times
+  # # This section prepares the device for later encryption. We write three times
   # # to ensure we "catch" all the spare area and such. This isn't perfect, but it
   # # should still do the job. See
   # # https://www.usenix.org/legacy/events/fast11/tech/full_papers/Wei.pdf for
   # # more information. It also has the "bonus" effect of exercising the drive
   # # some more before we run our final SMART test.
   # echo
-  # echo "Overwriting drive with random data... (1/3)"
-  # randomize "${drive}"
-  # echo "Overwriting drive with random data... (2/3)"
-  # randomize "${drive}"
-  # echo "Overwriting drive with random data... (3/3)"
-  # randomize "${drive}"
+  # local passes=3
+  # for i in $(seq 1 ${passes}); do
+  #   echo "Overwriting ${device} with random data (${i}/${passes})"
+  #   randomize "${device}"
+  # done
 
   echo
-  smart_test "${drive}" "long"
+  smart_test 'long' "${device}"
 
   echo
   echo "Burn-in test completed on $(date)"
 
   echo
-  echo "Burn-in test results:"
-  smartctl -a "${drive}"
+  echo "Final burn-in test results:"
+  smartctl -a "${device}"
 }
 
 if [ -z "${1}" ]; then
-  echo "Drive required as first argument"
+  echo "A device is required as the first argument."
   exit 1
 fi
 
