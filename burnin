@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ "${EUID}" -ne 0 ]; then
-   echo "This script must be run as root" 1>&2
+   echo "This script must be run as root!" 1>&2
    exit 1
 fi
 
@@ -10,10 +10,10 @@ fi
 function get_smart_progress {
   local device="${1}"
 
-  smartctl -a "${device}" | \
-    grep 'of test remaining' | \
-    sed 's/^[[:blank:]]*//' | \
-    sed 's/\.$//'
+  smartctl -a "${device}" \
+    | grep 'of test remaining' \
+    | sed 's/^[[:blank:]]*//' \
+    | sed 's/\.$//'
 }
 
 # Fill the target device with a random stream of data.
@@ -77,24 +77,29 @@ function burnin {
   echo
   smart_test 'long' "${device}"
 
-  # # This section runs a _destructive_ write/read test on the device, exercising
-  # # its memory cells and attempting to cause an early failure.
-  # echo
-  # echo "Running destructive badblocks test on $(date):"
-  # badblocks -ws "${device}"
+  # Make double, extra sure the user really meant to overwrite the given device!
+  if [ "${DESTROY_MY_DATA}" = 'please' ]; then
+    # This section runs a _destructive_ write/read test on the device,
+    # exercising its memory cells and attempting to cause an early failure.
+    echo
+    echo "Running destructive badblocks test on $(date):"
+    badblocks -ws "${device}"
 
-  # # This section prepares the device for later encryption. We write three times
-  # # to ensure we "catch" all the spare area and such. This isn't perfect, but it
-  # # should still do the job. See
-  # # https://www.usenix.org/legacy/events/fast11/tech/full_papers/Wei.pdf for
-  # # more information. It also has the "bonus" effect of exercising the drive
-  # # some more before we run our final SMART test.
-  # echo
-  # local passes=3
-  # for i in $(seq 1 ${passes}); do
-  #   echo "Overwriting ${device} with random data (${i}/${passes})"
-  #   randomize "${device}"
-  # done
+    # This section prepares the device for later encryption. We write three
+    # times to ensure we "catch" all the spare area and such. This isn't
+    # perfect, but it should still do the job. See
+    # https://www.usenix.org/legacy/events/fast11/tech/full_papers/Wei.pdf for
+    # more information. It also has the "bonus" effect of exercising the drive
+    # some more before we run our final SMART test.
+    echo
+    local passes=3
+    for i in $(seq 1 ${passes}); do
+      echo "Overwriting ${device} with random data (${i}/${passes})"
+      randomize "${device}"
+    done
+  else
+    echo 'Skipping destructive tests. If you want to run them, specify DESTROY_MY_DATA=please.'
+  fi
 
   echo
   smart_test 'long' "${device}"
