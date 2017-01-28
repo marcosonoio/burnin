@@ -16,6 +16,18 @@ function get_smart_progress {
     sed 's/\.$//'
 }
 
+# Fill the target device with a random stream of data.
+function randomize {
+  local device="${1}"
+  
+   cat /dev/zero \
+     | openssl enc \
+       -aes-256-ctr \
+       -nosalt \
+       -pass "pass:$(dd if=/dev/urandom bs=128 count=1 2> /dev/null | base64)" \
+     | dd status=progress bs=64K of="${device}"
+}
+
 # Run a SMART test in offline mode and wait until it's done, printing remaining
 # progress every minute.
 function smart_test {
@@ -64,9 +76,25 @@ function burnin {
   echo
   smart_test "${drive}" "long"
 
-  echo
-  echo "Running destructive badblocks test on $(date):"
+  # # This section runs a _destructive_ write/read test on the drive, exercising
+  # # its memory cells and attempting to cause an early failure.
+  # echo
+  # echo "Running destructive badblocks test on $(date):"
   # badblocks -ws "${drive}"
+  
+  # # This section prepares the drive for later encryption. We write three times
+  # # to ensure we "catch" all the spare area and such. This isn't perfect, but
+  # # it should still do the job. See
+  # # https://www.usenix.org/legacy/events/fast11/tech/full_papers/Wei.pdf for
+  # # more information. It also has the "bonus" effect of exercising the drive
+  # # some more before we run our final SMART test.
+  # echo
+  # echo "Overwriting drive with random data... (1/3)"
+  # randomize "${drive}"
+  # echo "Overwriting drive with random data... (2/3)"
+  # randomize "${drive}"
+  # echo "Overwriting drive with random data... (3/3)"
+  # randomize "${drive}"
 
   echo
   smart_test "${drive}" "long"
