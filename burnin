@@ -64,6 +64,8 @@ function burnin {
   echo "Current SMART status for ${device}:"
   smartctl -a "${device}"
 
+  # This allows FreeBSD systems to overwrite the MBR. It has no effect on Linux,
+  # which (I presume) allows that by default.
   echo
   echo "Putting kernel in raw mode"
   sysctl kern.geom.debugflags=0x10
