@@ -19,7 +19,7 @@ function get_smart_progress {
 # Fill the target device with a random stream of data.
 function randomize {
   local device="${1}"
-  
+
    cat /dev/zero \
      | openssl enc \
        -aes-256-ctr \
@@ -81,10 +81,10 @@ function burnin {
   # echo
   # echo "Running destructive badblocks test on $(date):"
   # badblocks -ws "${drive}"
-  
+
   # # This section prepares the drive for later encryption. We write three times
-  # # to ensure we "catch" all the spare area and such. This isn't perfect, but
-  # # it should still do the job. See
+  # # to ensure we "catch" all the spare area and such. This isn't perfect, but it
+  # # should still do the job. See
   # # https://www.usenix.org/legacy/events/fast11/tech/full_papers/Wei.pdf for
   # # more information. It also has the "bonus" effect of exercising the drive
   # # some more before we run our final SMART test.
