@@ -1,1 +1,1 @@
-ACTION=="add", SUBSYSTEM=="block", KERNEL=="sd[b-z]", TAG+="systemd", ENV{SYSTEMD_WANTS}="burnin@%k.service"
+ACTION=="add", SUBSYSTEM=="block", SUBSYSTEMS!="usb", KERNEL=="sd[b-z]", TAG+="systemd", ENV{SYSTEMD_WANTS}="burnin@%k.service"
