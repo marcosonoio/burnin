@@ -44,7 +44,7 @@ function print_exit {
   echo "END at $(date)" | tee -a "${report}" "${log}"
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
   echo 1 > "/sys/block/${dev}/device/delete"
-  rm ${working_dir}"/run/${dev}"
+  rm "${working_dir}/run/${dev}"
   exit
 }
 
