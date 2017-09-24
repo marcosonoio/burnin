@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 working_dir="$(cat /etc/burnin)"
-cd "$working_dir"
+cd "$working_dir" || exit
 
 while :
 
@@ -32,7 +32,7 @@ do
         echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
         read -r num
         if [ "$i" -ge "$num" ] && [ "$num" -ge 1 ]; then
-            status=$(cat "$working_dir"/log/"${devs[$num]}".log)
+            status=$(cat "$working_dir/log/${devs[$num]}".log)
             printf "\033c"
             echo "$status" | less
             echo
