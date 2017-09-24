@@ -43,8 +43,8 @@ function print_exit {
   echo " " | tee -a "${report}" "${log}"
   echo "END at $(date)" | tee -a "${report}" "${log}"
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
-  echo 1 > /sys/block/"${dev}"/device/delete
-  rm "${working_dir}"/run/"${dev}"
+  echo 1 > "/sys/block/${dev}/device/delete"
+  rm ${working_dir}"/run/${dev}"
   exit
 }
 
@@ -59,7 +59,7 @@ function burnin {
   #if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
   
   # save a "run" file with the pid of this script and the name of the drive 
-  echo "$$" "${dev}" > "${working_dir}"/run/"${dev}"
+  echo "$$" "${dev}" > "${working_dir}/run/${dev}"
     
   # Aborting any running SMART tests on ${device}
   smartctl -X "${device}" >> "${log}"
@@ -97,7 +97,7 @@ function burnin {
   echo "Sector Size:    " "${size_sector}" | tee -a "${report}" "${log}"
 
   # Unmount all partition of the device
-  for n in "${device}"* ; do umount $n  >> "${log}" 2>&1 ; done
+  for n in "${device}"* ; do umount "$n"  >> "${log}" 2>&1 ; done
   
   # Erase partiton table, MBR, ecc
   wipefs -a "${device}" >> "${log}"
