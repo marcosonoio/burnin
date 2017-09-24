@@ -144,8 +144,8 @@ function burnin {
   # exercising its memory cells and attempting to cause an early failure.
   echo
   echo "Running destructive badblocks test on $(date):"
-  badblocks -ws -b "size_sector" "${device}" -o log/"$sn"_badblocks
-  bad_blocks=$(grep "Pass Completed" log/"$sn"_badblocks)
+  badblocks -ws -b "$size_sector" "${device}" -o "${working_dir}"/log/"$sn"_badblocks
+  bad_blocks=$(grep "Pass Completed" "${working_dir}"/log/"$sn"_badblocks)
   echo "$bad_blocks" | "${report}" "${log}"
   #rm log/"$sn"_badblocks
 
@@ -192,3 +192,4 @@ fi
 
 # Run the burn-in and see how long it takes, just for fun.
 time burnin "${1}"
+
