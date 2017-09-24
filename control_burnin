@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+while :
+
+do
+    printf "\033c"
+    arr=(run/sd*)
+    if [ "$arr" == "run/sd*" ]; then
+        echo "No running test"
+        echo
+        read -rsp $'Press enter to refresh...\n'
+
+    else
+        i=0
+        devs=0
+        for pid in ${arr[*]}
+        do
+                i=$((i+1))
+                PID=$(awk '{print $1;}' "$pid")
+                d=$(ps -o etime= -p "$PID" | awk -F'-' '{print $1}' )
+                h=$(ps -o etime= -p "$PID" | awk -F'-' '{print $2}' | awk -F':' '{print $1}')
+                mm=$(ps -o etime= -p "$PID" | awk -F'-' '{print $2}' | awk -F':' '{print $2}')
+                device=$(awk '{print $2;}' "$pid")
+                sn=$(smartctl -i "/dev/$device" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
+                echo "#$i /dev/$device: $sn - is running for $d days $h hours $mm minutes"
+                devs[$i]="$sn"
+        done
+        echo
+        echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
+        read -r num
+        if [ "$i" -ge "$num" ] && [ "$num" -ge 1 ]; then
+            status=$(cat /tmp/burn/"${devs[$num]}".log)
+            printf "\033c"
+            echo "$status" | less
+            echo
+            read -rsp $'Press enter to continue...\n'
+        fi
+
+    fi
+done

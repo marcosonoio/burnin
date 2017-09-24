@@ -1,0 +1,7 @@
+[Unit]
+Description=Burn In HDD
+BindsTo=dev-%i.device
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c "exec /home/marco/burn/burnin2 %I"

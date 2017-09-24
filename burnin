@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 if [ "${EUID}" -ne 0 ]; then
-   echo "This script must be run as root!" 1>&2
-   exit 1
+  echo "This script must be run as root!" 1>&2
+  exit 1
 fi
 
 # Gets the progress of a running SMART test as a string, or outputs nothing if
@@ -21,69 +21,159 @@ function get_smart_progress {
 function smart_test {
   local test_name="${1}"
   local device="${2}"
+  local log="${3}"
 
-  smartctl --test="${test_name}" "${device}"
+  smartctl --test="${test_name}" "${device}" >> "${log}"
 
   # Wait for the progress remaining to disappear, signaling the end of the test.
-  local result="Running '${test_name}' SMART test on $(date)"
+  local result
+  result="Running '${test_name}' SMART test on $(date)"
   while [ -n "${result}" ]; do
-    echo "${result}"
+    echo "${result}" | tee -a "$log"
     sleep 60
     result="$(get_smart_progress "${device}")"
   done
 }
 
+# Print the the report, power off the drive and remove the "run" file
+function print_exit {
+  local report="${1}"
+  local log="${2}"
+  local dev="${3}"
+  echo " " | tee -a "${report}" "${log}"
+  echo "END at $(date)" | tee -a "${report}" "${log}"
+  lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
+  echo 1 > /sys/block/"${dev}"/device/delete
+  rm run/"${dev}"
+  exit
+}
+
 # Run a succession of SMART tests and badblocks on a device, and output the
 # final results when complete.
 function burnin {
-  local device="${1}"
+ 
+  local device="/dev/${1}"
+  local dev="${1}"
+  
+  # exit if the device does not exist
+  if [ ! -b "$device" ]; then echo "$device DOES NOT EXISTS"; exit; fi
+  
+  # save a "run" file with the pid of this script and the name of the drive 
+  echo "$$" "${dev}" > run/"${dev}"
+    
+  # Aborting any running SMART tests on ${device}
+  smartctl -X "${device}" >> "${log}"
+  
+  # get serial number, model and size sector
+  sn=$(smartctl -i "$device" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
+  model=$(smartctl -i "$device" | grep "Device Model" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
+  size_sector=$(blockdev --getpbsz "$device")
+  
+  # set filname of report and log
+  report="report/$sn"
+  log="log/$sn.log"
+  
+  # remove old file of the same drive
+  rm "$report" "$log"
+  
+  
+  echo | tee -a "$report" "$log"
+  echo "START at $(date)" | tee -a "$report" "$log"
+  echo | tee -a "$report" "$log"
 
-  echo
-  echo "Starting burn-in test for ${device} on $(date)"
+  echo "Device Model:   " "$model" | tee -a  "$report" "$log"
+  echo "Serial Number:  " "$sn" | tee -a "$report" "$log"
+  echo "Sector Size:    " "$size_sector" | tee -a "$report" "$log"
 
-  echo
-  echo "Aborting any running SMART tests on ${device}"
-  smartctl -X "${device}"
-
-  echo
-  echo "Current SMART status for ${device}:"
-  smartctl -a "${device}"
-
-  # This allows FreeBSD systems to overwrite the MBR. It has no effect on Linux,
-  # which (I presume) allows that by default.
-  echo
-  echo "Putting kernel in raw mode"
-  sysctl kern.geom.debugflags=0x10
-
-  echo
-  smart_test 'short' "${device}"
-
-  echo
-  smart_test 'conveyance' "${device}"
-
-  echo
-  smart_test 'long' "${device}"
-
-  # Make double, extra sure the user really meant to overwrite the given device!
-  if [ "${DESTROY_MY_DATA}" = 'please' ]; then
-    # This section runs a _destructive_ write/read test on the device,
-    # exercising its memory cells and attempting to cause an early failure.
-    echo
-    echo "Running destructive badblocks test on $(date):"
-    badblocks -ws "${device}"
+  # Unmount all partition of the device
+  for n in "$device"* ; do umount $n  >> "${log}" 2>&1 ; done
+  
+  # Erase partiton table, MBR, ecc
+  wipefs -a "$device" >> "${log}"
+  
+  # check if smart status is OK
+  if ( smartctl -H "$device" | grep "PASSED" >> "${log}" ); then
+    echo "SMART status:    OK!!!" | tee -a "$report" "$log"
   else
-    echo 'Skipping destructive tests. If you want to run them, specify DESTROY_MY_DATA=please.'
+    echo "SMART status:    FAIL!!!" | tee -a "$report" "$log"
+    print_exit "${report}" "${log}"
   fi
 
+  # start short selftest
   echo
-  smart_test 'long' "${device}"
+  smart_test 'short' "${device}" "${log}"
+  if (smartctl -l selftest "$device" | grep "# 1" | grep "Short" | grep "Completed without error" >> "${log}" ); then
+    echo "Short test:      OK!!!" | tee -a "$report" "$log"
+  else
+    echo "Short test:      FAIL!!!" | tee -a "$report" "$log"
+    print_exit "${report}" "${log}"
+  fi
 
+  # start conveyance selftest, if the drive is capable
   echo
-  echo "Burn-in test completed on $(date)"
+  if ( smartctl -c "$device" | grep "Conveyance" >> "${log}"); then
+    smart_test 'conveyance' "${device}" "${log}"
+    if (smartctl -l selftest "$device" | grep "# 1" | grep "Conveyance" | grep "Completed without error" >> "${log}" ); then
+      echo "Conveyance test: OK!!!" | tee -a "$report" "$log"
+    else
+      echo "Conveyance test: FAIL!!!" | tee -a "$report" "$log"
+      print_exit "${report}" "${log}"
+    fi
+  fi
+  
+  # start the long selftest
+  echo
+  smart_test 'long' "${device}" "${log}"
+  if (smartctl -l selftest "$device" | grep "# 1" | grep "Extended" | grep "Completed without error" >> "${log}" ); then
+    echo "Extended test:   OK!!!" | tee -a "$report" "$log"
+  else
+    echo "Extended test:   FAIL!!!" | tee -a "$report" "$log"
+    print_exit "${report}" "${log}"
+  fi
 
+  # This section runs a _destructive_ write/read test on the device,
+  # exercising its memory cells and attempting to cause an early failure.
   echo
-  echo "Final burn-in test results:"
-  smartctl -a "${device}"
+  echo "Running destructive badblocks test on $(date):"
+  badblocks -ws -b "size_sector" "${device}" -o log/"$sn"_badblocks
+  bad_blocks=$(grep "Pass Completed" log/"$sn"_badblocks)
+  echo "$bad_blocks" | "${report}" "${log}"
+  #rm log/"$sn"_badblocks
+
+  # run agarin long selftest
+  echo
+  smart_test 'long' "${device}" "${log}"
+  if (smartctl -l selftest "$device" | grep "# 1" | grep "Extended" | grep "Completed without error" >> "${log}" ); then
+    echo "Extended test:   OK!!!" | tee -a "$report" "$log"
+  else
+    echo "Extended test:   FAIL!!!" | tee -a "$report" "$log"
+    print_exit "${report}" "${log}"
+  fi
+
+  # get SMART attributes
+  echo
+  echo "SMART Attributes:" | tee -a "$report" "$log"
+  echo " " | tee -a "$report" "$log"
+
+  mapfile -t attributes < <(smartctl -A "$device" | sed -n '/ID/,$p' | sed 1d)
+  for line in "${!attributes[@]}"
+  do
+    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
+    printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "$report" "$log"
+  done
+  
+  # Speed test
+  # write
+  write_speed=$(dd if=/dev/zero of="$device" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
+  echo "Write Speed:     " "$write_speed" | tee -a "$SN"
+  # read
+  sync && echo 3 > /proc/sys/vm/drop_caches
+  read_speed=$(dd if="$device" of=/dev/null bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
+  echo "Read Speed:      " "$read_speed" | tee -a "$SN"
+  
+  
+  print_exit "${report}" "${log}" "${dev}"
+
 }
 
 if [ -z "${1}" ]; then
