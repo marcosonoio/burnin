@@ -120,7 +120,7 @@ function burnin {
 
   # start conveyance selftest, if the drive is capable
   echo
-  if ( smartctl -c "$device" | grep "Conveyance" >> "${log}"); then
+  if ( smartctl -c "$device" | grep "Conveyance Self-test supported." >> "${log}"); then
     smart_test 'conveyance' "${device}" "${log}"
     if (smartctl -l selftest "$device" | grep "# 1" | grep "Conveyance" | grep "Completed without error" >> "${log}" ); then
       echo "Conveyance test: OK!!!" | tee -a "$report" "$log"
@@ -192,4 +192,5 @@ fi
 
 # Run the burn-in and see how long it takes, just for fun.
 time burnin "${1}"
+
 
