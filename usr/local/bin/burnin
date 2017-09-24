@@ -76,7 +76,7 @@ function burnin {
   
   # remove old file of the same drive
   if [ -f  "${report}" ] ; then rm "${report}" ; fi
-  if [ -f  "${log}" ] ; then rm "${report}" ; fi
+  if [ -f  "${log}" ] ; then rm "${log}" ; fi
   if [ -f  "${badblocks_log}" ] ; then rm "${badblocks_log}" ; fi
   
    # check if the drive is smart capable, and activate it if nothing
