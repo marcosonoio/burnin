@@ -64,10 +64,10 @@ function burnin {
     
   # check if the drive is smart capable, and activate it if nothing
   if ( smartctl -i "$device" | grep "SMART support is: Available" >> "${log}" ); then
-    smartctl --smart=on "$device"
+    smartctl --smart=on "$device" >> "${log}"
   else
-    echo "SMART non Available" | tee -a "$report" "$log"
-    print_exit "${report}" "${log}"
+    echo "SMART support not Available" | tee -a "$report" "$log"
+    print_exit "${report}" "${log}" "${dev}"
   fi
     
   # Aborting any running SMART tests on ${device}
@@ -105,7 +105,7 @@ function burnin {
     echo "SMART status:    OK!!!" | tee -a "$report" "$log"
   else
     echo "SMART status:    FAIL!!!" | tee -a "$report" "$log"
-    print_exit "${report}" "${log}"
+    print_exit "${report}" "${log}" "${dev}"
   fi
 
   # start short selftest
@@ -115,7 +115,7 @@ function burnin {
     echo "Short test:      OK!!!" | tee -a "$report" "$log"
   else
     echo "Short test:      FAIL!!!" | tee -a "$report" "$log"
-    print_exit "${report}" "${log}"
+    print_exit "${report}" "${log}" "${dev}"
   fi
 
   # start conveyance selftest, if the drive is capable
@@ -126,7 +126,7 @@ function burnin {
       echo "Conveyance test: OK!!!" | tee -a "$report" "$log"
     else
       echo "Conveyance test: FAIL!!!" | tee -a "$report" "$log"
-      print_exit "${report}" "${log}"
+      print_exit "${report}" "${log}" "${dev}"
     fi
   fi
   
@@ -137,7 +137,7 @@ function burnin {
     echo "Extended test:   OK!!!" | tee -a "$report" "$log"
   else
     echo "Extended test:   FAIL!!!" | tee -a "$report" "$log"
-    print_exit "${report}" "${log}"
+    print_exit "${report}" "${log}" "${dev}"
   fi
 
   # This section runs a _destructive_ write/read test on the device,
@@ -156,7 +156,7 @@ function burnin {
     echo "Extended test:   OK!!!" | tee -a "$report" "$log"
   else
     echo "Extended test:   FAIL!!!" | tee -a "$report" "$log"
-    print_exit "${report}" "${log}"
+    print_exit "${report}" "${log}" "${dev}"
   fi
 
   # get SMART attributes
