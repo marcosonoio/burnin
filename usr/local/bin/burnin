@@ -83,7 +83,8 @@ function burnin {
   log="${working_dir}/log/$sn.log"
   
   # remove old file of the same drive
-  rm "$report" "$log"
+  if [ -f  "$report" ] ; then rm "$report" ; fi
+  if [ -f  "$log" ] ; then rm "$report" ; fi
   
   
   echo | tee -a "$report" "$log"
