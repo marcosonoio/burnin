@@ -54,12 +54,13 @@ function burnin {
  
   local device="/dev/${1}"
   local dev="${1}"
+  working_dir="$(cat /etc/burnin)"
   
   # exit if the device does not exist
   if [ ! -b "$device" ]; then echo "$device DOES NOT EXISTS"; exit; fi
   
   # save a "run" file with the pid of this script and the name of the drive 
-  echo "$$" "${dev}" > run/"${dev}"
+  echo "$$" "${dev}" > "${working_dir}"/"${dev}"
     
   # Aborting any running SMART tests on ${device}
   smartctl -X "${device}" >> "${log}"
@@ -70,8 +71,8 @@ function burnin {
   size_sector=$(blockdev --getpbsz "$device")
   
   # set filname of report and log
-  report="report/$sn"
-  log="log/$sn.log"
+  report="${working_dir}/report/$sn"
+  log="${working_dir}/log/$sn.log"
   
   # remove old file of the same drive
   rm "$report" "$log"
@@ -165,11 +166,11 @@ function burnin {
   # Speed test
   # write
   write_speed=$(dd if=/dev/zero of="$device" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
-  echo "Write Speed:     " "$write_speed" | tee -a "$SN"
+  echo "Write Speed:     " "$write_speed" | tee -a "$report" "$log"
   # read
   sync && echo 3 > /proc/sys/vm/drop_caches
   read_speed=$(dd if="$device" of=/dev/null bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
-  echo "Read Speed:      " "$read_speed" | tee -a "$SN"
+  echo "Read Speed:      " "$read_speed" | tee -a "$report" "$log"
   
   
   print_exit "${report}" "${log}" "${dev}"
