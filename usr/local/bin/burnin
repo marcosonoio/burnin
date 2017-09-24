@@ -44,7 +44,7 @@ function print_exit {
   echo "END at $(date)" | tee -a "${report}" "${log}"
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
   echo 1 > /sys/block/"${dev}"/device/delete
-  rm run/"${dev}"
+  rm "${working_dir}"/run/"${dev}"
   exit
 }
 
@@ -54,21 +54,12 @@ function burnin {
  
   local device="/dev/${1}"
   local dev="${1}"
-  working_dir="$(cat /etc/burnin)"
   
   # exit if the device does not exist
-  if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
+  #if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
   
   # save a "run" file with the pid of this script and the name of the drive 
   echo "$$" "${dev}" > "${working_dir}"/run/"${dev}"
-    
-  # check if the drive is smart capable, and activate it if nothing
-  if ( smartctl -i "${device}" | grep "SMART support is: Available" >> "${log}" ); then
-    smartctl --smart=on "${device}" >> "${log}"
-  else
-    echo "SMART support is not Available" | tee -a "${report}" "${log}"
-    print_exit "${report}" "${log}" "${dev}"
-  fi
     
   # Aborting any running SMART tests on ${device}
   smartctl -X "${device}" >> "${log}"
@@ -87,6 +78,14 @@ function burnin {
   if [ -f  "${report}" ] ; then rm "${report}" ; fi
   if [ -f  "${log}" ] ; then rm "${report}" ; fi
   if [ -f  "${badblocks_log}" ] ; then rm "${badblocks_log}" ; fi
+  
+   # check if the drive is smart capable, and activate it if nothing
+  if ( smartctl -i "${device}" | grep "SMART support is: Available" >> "${log}" ); then
+    smartctl --smart=on "${device}" >> "${log}"
+  else
+    echo "SMART support is not Available" | tee -a "${report}" "${log}"
+    print_exit "${report}" "${log}" "${dev}"
+  fi
   
   
   echo | tee -a "${report}" "${log}"
@@ -123,7 +122,7 @@ function burnin {
 
   # start conveyance selftest, if the drive is capable
   echo
-  if ( smartctl -c "${device}" | grep "Conveyance Self-test supported." >> "${log}"); then
+  if ! ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." >> "${log}"); then
     smart_test 'conveyance' "${device}" "${log}"
     if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" >> "${log}" ); then
       echo "Conveyance test: OK!!!" | tee -a "${report}" "${log}"
@@ -191,6 +190,8 @@ if [ -z "${1}" ]; then
   echo "A device is required as the first argument."
   exit 1
 fi
+
+working_dir="$(cat /etc/burnin)"
 
 # Run the burn-in and see how long it takes, just for fun.
 time burnin "${1}"
