@@ -4,4 +4,6 @@ BindsTo=dev-%i.device
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c "exec /home/marco/burn/burnin2 %I"
+# adjust to your working directory
+WorkingDir=/burnin/
+ExecStart=/bin/sh -c "exec burnin %I"
