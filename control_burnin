@@ -29,7 +29,7 @@ do
         echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
         read -r num
         if [ "$i" -ge "$num" ] && [ "$num" -ge 1 ]; then
-            status=$(cat /tmp/burn/"${devs[$num]}".log)
+            status=$(cat run/"${devs[$num]}".log)
             printf "\033c"
             echo "$status" | less
             echo
