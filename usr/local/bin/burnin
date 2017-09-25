@@ -23,7 +23,7 @@ function smart_test {
   local device="${2}"
   local log="${3}"
 
-  smartctl --test="${test_name}" "${device}" >> "${log}"
+  smartctl --test="${test_name}" "${device}" >> /dev/null
 
   # Wait for the progress remaining to disappear, signaling the end of the test.
   local result
@@ -62,7 +62,7 @@ function burnin {
   echo "$$" "${dev}" > "${working_dir}/run/${dev}"
     
   # Aborting any running SMART tests on ${device}
-  smartctl -X "${device}" >> "${log}"
+  smartctl -X "${device}"
   
   # get serial number, model and size sector
   sn=$(smartctl -i "${device}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
@@ -80,7 +80,7 @@ function burnin {
   if [ -f  "${badblocks_log}" ] ; then rm "${badblocks_log}" ; fi
   
    # check if the drive is smart capable, and activate it if nothing
-  if ( smartctl -i "${device}" | grep "SMART support is: Available" >> "${log}" ); then
+  if ( smartctl -i "${device}" | grep "SMART support is: Available" ); then
     smartctl --smart=on "${device}" >> "${log}"
   else
     echo "SMART support is not Available" | tee -a "${report}" "${log}"
@@ -97,13 +97,13 @@ function burnin {
   echo "Sector Size:    " "${size_sector}" | tee -a "${report}" "${log}"
 
   # Unmount all partition of the device
-  for n in "${device}"* ; do umount "$n"  >> "${log}" 2>&1 ; done
+  for n in "${device}"* ; do umount "$n" ; done
   
   # Erase partiton table, MBR, ecc
   wipefs -a "${device}" >> "${log}"
   
   # check if smart status is OK
-  if ( smartctl -H "${device}" | grep "PASSED" >> "${log}" ); then
+  if ( smartctl -H "${device}" | grep "PASSED" ); then
     echo "SMART status:    OK!!!" | tee -a "${report}" "${log}"
   else
     echo "SMART status:    FAIL!!!" | tee -a "${report}" "${log}"
@@ -113,7 +113,7 @@ function burnin {
   # start short selftest
   echo
   smart_test 'short' "${device}" "${log}"
-  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Short" | grep "Completed without error" >> "${log}" ); then
+  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Short" | grep "Completed without error" ); then
     echo "Short test:      OK!!!" | tee -a "${report}" "${log}"
   else
     echo "Short test:      FAIL!!!" | tee -a "${report}" "${log}"
@@ -122,9 +122,9 @@ function burnin {
 
   # start conveyance selftest, if the drive is capable
   echo
-  if ! ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." >> "${log}"); then
+  if ! ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." ); then
     smart_test 'conveyance' "${device}" "${log}"
-    if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" >> "${log}" ); then
+    if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" ); then
       echo "Conveyance test: OK!!!" | tee -a "${report}" "${log}"
     else
       echo "Conveyance test: FAIL!!!" | tee -a "${report}" "${log}"
@@ -135,7 +135,7 @@ function burnin {
   # start the long selftest
   echo
   smart_test 'long' "${device}" "${log}"
-  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" >> "${log}" ); then
+  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
     echo "Extended test:   OK!!!" | tee -a "${report}" "${log}"
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}" "${log}"
@@ -145,15 +145,15 @@ function burnin {
   # This section runs a _destructive_ write/read test on the device,
   # exercising its memory cells and attempting to cause an early failure.
   echo
-  echo "Running destructive badblocks test on $(date):"
+  echo "Running destructive badblocks test on $(date):" | tee -a "${log}"
   badblocks -ws -b "${size_sector}" "${device}" -o "${badblocks_log}"
   bad_blocks=$(grep "Pass Completed" "${badblocks_log}")
-  echo "$bad_blocks" | "${report}" "${log}"
+  echo "$bad_blocks" | tee -a "${report}" "${log}"
 
   # run agarin long selftest
   echo
   smart_test 'long' "${device}" "${log}"
-  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" >> "${log}" ); then
+  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
     echo "Extended test:   OK!!!" | tee -a "${report}" "${log}"
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}" "${log}"
