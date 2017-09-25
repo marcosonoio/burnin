@@ -40,23 +40,17 @@ function print_exit {
   local report="${1}"
   local log="${2}"
   local dev="${3}"
-  echo " " | tee -a "${report}" "${log}"
-   
-   # get SMART attributes
-  echo
-  echo "SMART Attributes:" | tee -a "${report}" "${log}"
-  echo " " | tee -a "${report}" "${log}"
-
-  mapfile -t attributes < <(smartctl -A "${device}" | sed -n '/ID/,$p' | sed 1d)
-  for line in "${!attributes[@]}"
-  do
-    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
-    printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}" "${log}"
-  done
+  
   echo " " | tee -a "${report}" "${log}"
   echo "END at $(date)" | tee -a "${report}" "${log}"
+  
+  # print the report with margins (default printer)
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
+  
+  # power off the device
   echo 1 > "/sys/block/${dev}/device/delete"
+  
+  # remove the "run" file
   rm "${working_dir}/run/${dev}"
   exit
 }
@@ -92,7 +86,7 @@ function burnin {
   if [ -f  "${log}" ] ; then rm "${log}" ; fi
   if [ -f  "${badblocks_log}" ] ; then rm "${badblocks_log}" ; fi
   
-   # check if the drive is smart capable, and activate it if nothing
+  # check if the drive is smart capable, and activate it if nothing
   if ( smartctl -i "${device}" | grep "SMART support is: Available" ); then
     smartctl --smart=on "${device}" >> "${log}"
   else
@@ -100,19 +94,20 @@ function burnin {
     print_exit "${report}" "${log}" "${dev}"
   fi
   
-  
+  # start the true test
   echo | tee -a "${report}" "${log}"
   echo "START at $(date)" | tee -a "${report}" "${log}"
   echo | tee -a "${report}" "${log}"
 
+  # save device maodel, serial number and the sector size
   echo "Device Model:   " "${model}" | tee -a  "${report}" "${log}"
   echo "Serial Number:  " "${sn}" | tee -a "${report}" "${log}"
   echo "Sector Size:    " "${size_sector}" | tee -a "${report}" "${log}"
 
-  # Unmount all partition of the device
+  # Unmount all partition of the device | maybe it is not necessary
   for n in "${device}"* ; do umount "$n" ; done
   
-  # Erase partiton table, MBR, ecc
+  # Erase partiton table, MBR, ecc | maybe it is not necessary
   wipefs -a "${device}" >> "${log}"
   
   # check if smart status is OK
@@ -126,6 +121,8 @@ function burnin {
   # start short selftest
   echo
   smart_test 'short' "${device}" "${log}"
+  
+  # check if short test is OK
   if (smartctl -l selftest "${device}" | grep "# 1" | grep "Short" | grep "Completed without error" ); then
     echo "Short test:      OK!!!" | tee -a "${report}" "${log}"
   else
@@ -139,6 +136,8 @@ function burnin {
     echo "Conveyance Self-test is not supported" | tee -a "${log}"
   else
     smart_test 'conveyance' "${device}" "${log}"
+    
+    # check if conveyance test is OK
     if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" ); then
       echo "Conveyance test: OK!!!" | tee -a "${report}" "${log}"
     else
@@ -150,6 +149,8 @@ function burnin {
   # start the long selftest
   echo
   smart_test 'long' "${device}" "${log}"
+  
+  # check if long test is OK
   if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
     echo "Extended test:   OK!!!" | tee -a "${report}" "${log}"
   else
@@ -175,6 +176,8 @@ function burnin {
   # run agarin long selftest
   echo
   smart_test 'long' "${device}" "${log}"
+  
+  # check if second long test is OK
   if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
     echo "2°Extended test: OK!!!" | tee -a "${report}" "${log}"
   else
@@ -182,6 +185,18 @@ function burnin {
     print_exit "${report}" "${log}" "${dev}"
   fi
 
+  # get SMART attributes
+  echo
+  echo "SMART Attributes:" | tee -a "${report}" "${log}"
+  echo " " | tee -a "${report}" "${log}"
+
+  mapfile -t attributes < <(smartctl -A "${device}" | sed -n '/ID/,$p' | sed 1d)
+  for line in "${!attributes[@]}"
+  do
+    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
+    printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}" "${log}"
+  done
+  
   # Speed test
   # write
   write_speed=$(dd if=/dev/zero of="${device}" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
@@ -191,7 +206,7 @@ function burnin {
   read_speed=$(dd if="${device}" of=/dev/null bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
   echo "Read Speed:      " "${read_speed}" | tee -a "${report}" "${log}"
   
-  
+  # print the report and exit
   print_exit "${report}" "${log}" "${dev}"
 
 }
@@ -201,6 +216,7 @@ if [ -z "${1}" ]; then
   exit 1
 fi
 
+# get the path to store report file, log and "run"
 working_dir="$(cat /etc/burnin)"
 
 # Run the burn-in and see how long it takes, just for fun.
