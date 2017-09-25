@@ -41,6 +41,19 @@ function print_exit {
   local log="${2}"
   local dev="${3}"
   echo " " | tee -a "${report}" "${log}"
+   
+   # get SMART attributes
+  echo
+  echo "SMART Attributes:" | tee -a "${report}" "${log}"
+  echo " " | tee -a "${report}" "${log}"
+
+  mapfile -t attributes < <(smartctl -A "${device}" | sed -n '/ID/,$p' | sed 1d)
+  for line in "${!attributes[@]}"
+  do
+    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
+    printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}" "${log}"
+  done
+  echo " " | tee -a "${report}" "${log}"
   echo "END at $(date)" | tee -a "${report}" "${log}"
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
   echo 1 > "/sys/block/${dev}/device/delete"
@@ -163,24 +176,12 @@ function burnin {
   echo
   smart_test 'long' "${device}" "${log}"
   if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
-    echo "Extended test:   OK!!!" | tee -a "${report}" "${log}"
+    echo "2°Extended test: OK!!!" | tee -a "${report}" "${log}"
   else
-    echo "Extended test:   FAIL!!!" | tee -a "${report}" "${log}"
+    echo "2°Extended test: FAIL!!!" | tee -a "${report}" "${log}"
     print_exit "${report}" "${log}" "${dev}"
   fi
 
-  # get SMART attributes
-  echo
-  echo "SMART Attributes:" | tee -a "${report}" "${log}"
-  echo " " | tee -a "${report}" "${log}"
-
-  mapfile -t attributes < <(smartctl -A "${device}" | sed -n '/ID/,$p' | sed 1d)
-  for line in "${!attributes[@]}"
-  do
-    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
-    printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}" "${log}"
-  done
-  
   # Speed test
   # write
   write_speed=$(dd if=/dev/zero of="${device}" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
