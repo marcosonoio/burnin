@@ -1,0 +1,12 @@
+process=$(systemctl list-unit-files | grep burnin@sd | awk '{print $1}')
+
+for line in "${!process[@]}"
+do
+	  if ( systemctl is-active "${process[line]}" ); then
+		echo “active”
+        else
+           echo “inactive”
+        fi
+
+
+done
