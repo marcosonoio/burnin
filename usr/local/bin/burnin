@@ -148,7 +148,13 @@ function burnin {
   # exercising its memory cells and attempting to cause an early failure.
   echo
   echo "Running destructive badblocks test on $(date):" | tee -a "${log}"
-  badblocks -wsv -b "${size_sector}" "${device}" -o "${badblocks_log}"
+  cache_size=$(hdparm -I /dev/sdb | awk '/buffer size/ {print $4}')
+  if [ "${cache_size}" == "unknown" ]; then
+	  blocks_num="1024"
+  else
+	  blocks_num=$(( cache_size * 1024 / 4 / size_sector ))
+  fi
+  badblocks -wsv -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
   bad_blocks=$(wc -w <<< "${badblocks_log}")
   echo "$bad_blocks" | tee -a "${report}" "${log}"
 
