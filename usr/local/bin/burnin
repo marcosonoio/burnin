@@ -67,7 +67,7 @@ function burnin {
   # get serial number, model and size sector
   sn=$(smartctl -i "${device}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
   model=$(smartctl -i "${device}" | grep "Device Model" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
-  size_sector=$(blockdev --getpbsz "${device}")
+  size_sector=$(hdparm -I "${device}" | awk '/Physical Sector size:/ {print $4}')
   
   # set filname of report and log
   report="${working_dir}/report/${sn}"
@@ -122,7 +122,9 @@ function burnin {
 
   # start conveyance selftest, if the drive is capable
   echo
-  if ! ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." ); then
+  if ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." ); then
+    echo "Conveyance Self-test is not supported" | tee -a "${log}"
+  else
     smart_test 'conveyance' "${device}" "${log}"
     if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" ); then
       echo "Conveyance test: OK!!!" | tee -a "${report}" "${log}"
@@ -146,8 +148,8 @@ function burnin {
   # exercising its memory cells and attempting to cause an early failure.
   echo
   echo "Running destructive badblocks test on $(date):" | tee -a "${log}"
-  badblocks -ws -b "${size_sector}" "${device}" -o "${badblocks_log}"
-  bad_blocks=$(grep "Pass Completed" "${badblocks_log}")
+  badblocks -wsv -b "${size_sector}" "${device}" -o "${badblocks_log}"
+  bad_blocks=$(wc -w <<< "${badblocks_log}")
   echo "$bad_blocks" | tee -a "${report}" "${log}"
 
   # run agarin long selftest
