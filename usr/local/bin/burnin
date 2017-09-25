@@ -157,6 +157,7 @@ function burnin {
   badblocks -wsv -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
   bad_blocks=$(wc -w <<< "${badblocks_log}")
   echo "$bad_blocks" | tee -a "${report}" "${log}"
+  echo "End of destructive badblocks test on $(date):" | tee -a "${log}"
 
   # run agarin long selftest
   echo
