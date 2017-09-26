@@ -32,6 +32,7 @@ function smart_test {
     sleep 60
     result="$(get_smart_progress "${device}")"
   done
+  sleep 60
 }
 
 # Print the the report, power off the drive and remove the "run" file
