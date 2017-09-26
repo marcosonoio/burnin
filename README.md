@@ -10,5 +10,6 @@ TODO:
 - use systemd to log and to check if there are some "burnin"
 
 DEPENDENCIES:
+- smartmontools
 - jq (burninctl)
 - gawk (burninctl)
