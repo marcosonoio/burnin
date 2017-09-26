@@ -12,6 +12,9 @@ do
     i=0
     for service in ${process[*]}
     do
+      echo
+      echo "Burnin HDD control"
+      echo
       device[$i]="/dev/"$(echo  "$service" | sed 's/.*@\(.*\)\..*/\1/')
       sn=$(smartctl -i "${device[$i]}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
       since=$(systemctl status "$service" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
@@ -19,6 +22,7 @@ do
       pid[$i]=$(systemctl status "$service" | grep "Main PID" | awk '{print $3}')
       i=$((i+1))
     done
+    echo
     echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
     read -r num
     if [ "$i" -gt "$num" ] && [ "$num" -ge 0 ]; then
