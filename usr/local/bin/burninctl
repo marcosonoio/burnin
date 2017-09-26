@@ -3,7 +3,7 @@
 # progress bar https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
 function ProgressBar {
 # Process data
-	let _done=(${1}*4)/10
+	let _done=${1}*4/10
 	let _left=40-$_done
 # Build progressbar string lengths
 	_done=$(printf "%${_done}s")
