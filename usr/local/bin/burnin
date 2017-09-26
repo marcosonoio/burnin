@@ -154,7 +154,7 @@ function burnin {
   echo
   echo "Running destructive badblocks test on $(date)"
   echo "Badblocks test can take up to 10 hours"
-  cache_size=$(hdparm -I /dev/sdb | awk '/buffer size/ {print $4}')
+  cache_size=$(hdparm -I "${device}" | awk '/buffer size/ {print $4}')
   if [ "${cache_size}" == "unknown" ]; then
 	  blocks_num="1024"
   else
@@ -163,8 +163,9 @@ function burnin {
   test_pattern=(0xaa 0x55 0xff 0x00)
   for test in "${test_pattern[@]}"
   do
+    echo
     echo "Start badblocks with pattern ${test}"
-	badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
+    badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
   done	
   bad_blocks=$(wc -w <<< "${badblocks_log}")
   echo "Badblocks found: $bad_blocks" | tee -a "${report}"
