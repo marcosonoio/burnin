@@ -1,12 +1,42 @@
 #!/usr/bin/env bash
 
-process=$(systemctl list-unit-files | grep burnin@sd | awk '{print $1}')
 
-for line in "${!process[@]}"
+
+while :
 do
-  if ( systemctl is-active "${process[line]}" ); then
-    echo “active”
+  printf "\033c"
+  process=($(systemctl list-units --all --state=active | grep burnin | grep running | awk '{print $1}'))
+  if [ ${#process[@]} -eq 0 ]; then
+    echo "No running test"
+    echo
+    read -rsp $'Press enter to refresh...\n'
   else
-    echo “inactive"
+    i=0
+    for service in ${process[*]}
+    do
+      sn="serial number"
+      dev[$i]="/dev/sdb/"
+      since=$(systemctl status "$service" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
+      echo "#$i ${dev[i]} - ${sn} is running ${since}"
+      i=$((i+1))
+    done
+    echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
+    read -r num
+    if [ "$i" -gt "$num" ] && [ "$num" -ge 0 ]; then
+      printf "\033c"
+      messages=($(systemctl status "${process[$num]}" -o export -n10000 | grep MESSAGE | cut -d "=" -f 2))
+      time=($(systemctl status "${process[$num]}" -o export -n10000 | grep REALTIME_TIMESTAMP | cut -d "=" -f 2 ))
+      line=${#messages[@]}
+      echo "${line}"
+      for ((n=0;n < "${line}" ;n++))
+      {
+        time_=$(( time[$n] / 1000000 ))
+        time_=$( echo "$time_" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' )
+        echo "$time_: ${messages[$n]}"
+        sleep 0.5
+        
+      }
+      read -rsp $'Press enter to continue...\n'
+    fi
   fi
-done
+done  
