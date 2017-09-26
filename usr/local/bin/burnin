@@ -59,7 +59,7 @@ function burnin {
   local dev="${1}"
   
   # exit if the device does not exist
-  #if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
+  if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
   
   # save a "run" file with the pid of this script and the name of the drive 
   echo "$$" "${dev}" > "${working_dir}/run/${dev}"
