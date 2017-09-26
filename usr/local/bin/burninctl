@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-
-
 while :
 do
   printf "\033c"
@@ -18,25 +16,15 @@ do
       dev[$i]="/dev/sdb/"
       since=$(systemctl status "$service" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
       echo "#$i ${dev[i]} - ${sn} is running ${since}"
+      pid[$i]=$(systemctl status "$service" | grep "Main PID" | awk '{print $3}')
       i=$((i+1))
     done
     echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
     read -r num
     if [ "$i" -gt "$num" ] && [ "$num" -ge 0 ]; then
       printf "\033c"
-      messages=($(systemctl status "${process[$num]}" -o export -n10000 | grep MESSAGE | cut -d "=" -f 2))
-      time=($(systemctl status "${process[$num]}" -o export -n10000 | grep REALTIME_TIMESTAMP | cut -d "=" -f 2 ))
-      line=${#messages[@]}
-      echo "${line}"
-      for ((n=0;n < "${line}" ;n++))
-      {
-        time_=$(( time[$n] / 1000000 ))
-        time_=$( echo "$time_" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' )
-        echo "$time_: ${messages[$n]}"
-        sleep 0.5
-        
-      }
+      journalctl _PID="${pid[$num]}" -e -o json | jq -M -r '"\(.__REALTIME_TIMESTAMP | tonumber / 1000000) \(.MESSAGE)"' | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less
       read -rsp $'Press enter to continue...\n'
     fi
   fi
-done  
+done
