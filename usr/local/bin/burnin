@@ -60,9 +60,6 @@ function burnin {
   
   # exit if the device does not exist
   if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
-  
-  # save a "run" file with the pid of this script and the name of the drive 
-  echo "$$" "${dev}" > "${working_dir}/run/${dev}"
     
   # Aborting any running SMART tests on ${device}
   smartctl -X "${device}" > /dev/null
@@ -80,7 +77,7 @@ function burnin {
   if [ -f  "${report}" ] ; then rm "${report}" ; fi
   if [ -f  "${badblocks_log}" ] ; then rm "${badblocks_log}" ; fi
   
-  # check if the drive is smart capable, and activate it if nothing
+  # check if the drive is smart capable, and activate it
   if ( smartctl -i "${device}" | grep "SMART support is: Available" ); then
     smartctl --smart=on "${device}" > /dev/null
   else
