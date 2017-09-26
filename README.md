@@ -8,3 +8,7 @@ Hotplug sata drive works only with AHCI mode
 
 TODO:
 - use systemd to log and to check if there are some "burnin"
+
+DEPENDENCIES:
+- jq (burninctl)
+- gawk (burninctl)
