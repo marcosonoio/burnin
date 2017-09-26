@@ -9,12 +9,12 @@ do
     echo
     read -rsp $'Press enter to refresh...\n'
   else
+    echo
+    echo "Burnin HDD control"
+    echo
     i=0
     for service in ${process[*]}
     do
-      echo
-      echo "Burnin HDD control"
-      echo
       device[$i]="/dev/"$(echo  "$service" | sed 's/.*@\(.*\)\..*/\1/')
       sn=$(smartctl -i "${device[$i]}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
       since=$(systemctl status "$service" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
