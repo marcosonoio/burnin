@@ -78,7 +78,7 @@ function burnin {
   if [ -f  "${badblocks_log}" ] ; then rm "${badblocks_log}" ; fi
   
   # check if the drive is smart capable, and activate it
-  if ( smartctl -i "${device}" | grep "SMART support is: Available" ); then
+  if ( smartctl -i "${device}" | grep "SMART support is: Available" > /dev/null ); then
     smartctl --smart=on "${device}" > /dev/null
   else
     echo "SMART support is not Available" | tee -a "${report}"
@@ -114,7 +114,7 @@ function burnin {
   smart_test 'short' "${device}"
   
   # check if short test is OK
-  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Short" | grep "Completed without error" ); then
+  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Short" | grep "Completed without error" > /dev/null ); then
     echo "Short test:      OK!!!" | tee -a "${report}"
   else
     echo "Short test:      FAIL!!!" | tee -a "${report}"
@@ -129,7 +129,7 @@ function burnin {
     smart_test 'conveyance' "${device}"
     
     # check if conveyance test is OK
-    if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" ); then
+    if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" > /dev/null ); then
       echo "Conveyance test: OK!!!" | tee -a "${report}"
     else
       echo "Conveyance test: FAIL!!!" | tee -a "${report}"
@@ -142,7 +142,7 @@ function burnin {
   smart_test 'long' "${device}"
   
   # check if long test is OK
-  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
+  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" > /dev/null ); then
     echo "Extended test:   OK!!!" | tee -a "${report}"
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
@@ -176,7 +176,7 @@ function burnin {
   smart_test 'long' "${device}"
   
   # check if second long test is OK
-  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" ); then
+  if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" > /dev/null ); then
     echo "2°Extended test: OK!!!" | tee -a "${report}"
   else
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
