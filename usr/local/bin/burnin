@@ -152,7 +152,7 @@ function burnin {
   # This section runs a _destructive_ write/read test on the device,
   # exercising its memory cells and attempting to cause an early failure.
   echo
-  echo "Running destructive badblocks test on $(date):"
+  echo "Running destructive badblocks test on $(date)"
   echo "Badblocks test can take up to 10 hours"
   cache_size=$(hdparm -I /dev/sdb | awk '/buffer size/ {print $4}')
   if [ "${cache_size}" == "unknown" ]; then
@@ -160,10 +160,15 @@ function burnin {
   else
 	  blocks_num=$(( cache_size * 1024 / 4 / size_sector ))
   fi
-  badblocks -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
+  test_pattern=(0xaa 0x55 0xff 0x00)
+  for test in "${test_pattern[@]}"
+  do
+    echo "Start badblocks with pattern ${test}"
+	badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
+  done	
   bad_blocks=$(wc -w <<< "${badblocks_log}")
-  echo "$bad_blocks" | tee -a "${report}"
-  echo "End of destructive badblocks test on $(date):"
+  echo "Badblocks found: $bad_blocks" | tee -a "${report}"
+  echo "End of destructive badblocks test on $(date)"
 
   # run agarin long selftest
   echo
