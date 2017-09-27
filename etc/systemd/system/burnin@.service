@@ -5,3 +5,5 @@ BindsTo=dev-%i.device
 [Service]
 Type=simple
 ExecStart=/bin/sh -c "exec /usr/local/bin/burnin %I"
+ExecStop=/bin/sh -c "exec /bin/echo 1 > /sys/block/%I/device/delete"
+KillMode=control-group
