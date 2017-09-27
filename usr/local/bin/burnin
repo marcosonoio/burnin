@@ -166,7 +166,7 @@ function burnin {
   do
     echo
     echo "Start badblocks with pattern ${test}"
-    badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}"
+    badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}" > /dev/null
   done	
   bad_blocks=$(cat "${badblocks_log}" | wc -w)
   echo "Badblocks found: $bad_blocks" | tee -a "${report}"
