@@ -59,7 +59,7 @@ do
     echo
     echo
     # echo "Press Enter to refresh, or insert the number of the the device to show the log [1-6]: " 
-    read -t 10 -p $'Press Enter to refresh, or insert the number of the the device to show the log [1-6]: ' num
+    read -t 10 -p $'Press Enter to refresh, or insert the number of the the device to show the log [0-${i}]: ' num
     if [ "$i" -gt "$num" ] && [ "$num" -ge 0 ]; then
       printf "\033c"
       journalctl _PID="${pid[$num]}" -e -o json | jq -M -r '"\(.__REALTIME_TIMESTAMP | tonumber / 1000000) \(.MESSAGE)"' | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less
