@@ -26,7 +26,7 @@ function smart_test {
 
   # Wait for the progress remaining to disappear, signaling the end of the test.
   local result
-  result="Running '${test_name}' SMART test on $(date)"
+  result="Running '${test_name}' SMART self-test"
   while [ -n "${result}" ]; do
     echo "${result}"
     sleep 60
@@ -153,7 +153,7 @@ function burnin {
   # This section runs a _destructive_ write/read test on the device,
   # exercising its memory cells and attempting to cause an early failure.
   echo
-  echo "Running destructive badblocks test on $(date)"
+  echo "Running destructive badblocks test"
   echo "Badblocks test can take up to 10 hours"
   cache_size=$(hdparm -I "${device}" | awk '/buffer size/ {print $4}')
   if [ "${cache_size}" == "unknown" ]; then
@@ -170,7 +170,7 @@ function burnin {
   done	
   bad_blocks=$(cat "${badblocks_log}" | wc -w)
   echo "Badblocks found: $bad_blocks" | tee -a "${report}"
-  echo "End of destructive badblocks test on $(date)"
+  echo "End of destructive badblocks test"
 
   # run agarin long selftest
   echo
