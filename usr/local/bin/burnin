@@ -46,8 +46,8 @@ function print_exit {
   # print the report with margins (default printer)
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
   
-  # power off the device
-  echo 1 > "/sys/block/${dev}/device/delete"
+  # power off the device, made with systemd
+  # echo 1 > "/sys/block/${dev}/device/delete"
 
   exit
 }
