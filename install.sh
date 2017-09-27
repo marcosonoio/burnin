@@ -20,5 +20,5 @@ fi
 config=$(cat /etc/burnin)
 echo "the path to save the report is:${config}"
 echo
-read -rp $'Press enter to continue...\n'
+read -rp $'Press enter to Continue...\n'
 exit
