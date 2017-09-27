@@ -42,6 +42,7 @@ function print_exit {
   
   echo " " | tee -a "${report}"
   echo "END at $(date)" | tee -a "${report}"
+  echo "-" | tee -a "${report}" #my pos printer prefers short string for the last line
   
   # print the report with margins (default printer)
   lpr -o cpi=20 -o page-left=1 -o page-right=1 -o page-top=20 "${report}"
