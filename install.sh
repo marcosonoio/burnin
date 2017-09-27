@@ -8,7 +8,7 @@ fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${DIR}"
 
-install -m 755 etc/udev/rules.d/* /etc/udev/rulse.d/
+install -m 755 etc/udev/rules.d/* /etc/udev/rules.d/
 install -m 755 etc/systemd/system/* /etc/systemd/system/
 install -m 755 usr/local/bin/* /usr/local/bin/
 
