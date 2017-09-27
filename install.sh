@@ -16,6 +16,7 @@ if [ ! -f /etc/burnin ]; then
   read -r -p 'set directory path to save report:\n' config
   echo "${config}" > /etc/burnin
 fi
+
 config=$(cat /etc/burnin)
 echo "the path to save the report is:${config}"
 echo
