@@ -75,8 +75,8 @@ function burnin {
   badblocks_log="${working_dir}/${sn}_badblocks"
   
   # create and change permissions
-  install -b -m 755 /dev/null "${report}"
-  install -b -m 755 /dev/null "${badblocks_log}"
+  install -m 755 /dev/null "${report}"
+  install -m 755 /dev/null "${badblocks_log}"
   
   # check if the drive is smart capable, and activate it
   if ( smartctl -i "${device}" | grep "SMART support is: Available" > /dev/null ); then
