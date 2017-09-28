@@ -48,7 +48,7 @@ do
             active=$(systemctl is-active burnin@"${dev[$i]}".service)
             if [[ "${active}" == "active" ]]; then
               sn=$(smartctl -i /dev/"${dev[$i]}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
-              since=$(systemctl status /dev/"${dev[${i}]}" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
+              since=$(systemctl status /dev/"${dev[$i]}" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
               echo "#${i} /dev/${dev[$i]} - ${sn} is running ${since}"
               bar "${sn}"
 	      echo
