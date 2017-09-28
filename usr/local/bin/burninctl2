@@ -50,6 +50,7 @@ do
               sn=$(smartctl -i /dev/"${dev[$i]}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
               since=$(systemctl status burnin@"${dev[$i]}".service | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
               echo "#${i} /dev/${dev[$i]} - ${sn} is running ${since}"
+	      #journalctl -u  burnin@"${dev[$i]}".service  -e -o json | jq -M -r '"\(.MESSAGE | select(contains("%per%")))"' | tail -1
               bar "${sn}"
 	      echo
 	      echo
