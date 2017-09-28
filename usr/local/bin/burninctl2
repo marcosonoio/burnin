@@ -43,7 +43,7 @@ do
     i=1
     for sata in ${conn[*]}
     do
-        dev[$i]=$(lsscsi | grep -B 1 "${sata}" | head -1 | awk 'NF>1{print $NF}' | cut -d "/" -f 3)
+        dev[$i]=$(lsscsi -v | grep -B 1 "${sata}" | head -1 | awk 'NF>1{print $NF}' | cut -d "/" -f 3)
         if [ -n "${dev[${i}]}" ]; then
             active=$(systemctl is-active burnin@"${dev[$i]}".service)
             if [[ "${active}" == "active" ]]; then
