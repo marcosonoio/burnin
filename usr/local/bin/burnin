@@ -65,7 +65,7 @@ function burnin {
   if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
     
   # Aborting any running SMART tests on ${device}
-  smartctl -X "${device}" > /dev/null
+  smartctl -X "${device}" &>/dev/null
   
   # get serial number, model and size sector
   sn=$(smartctl -i "${device}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
@@ -105,7 +105,7 @@ function burnin {
   wipefs -a "${device}" > /dev/null
   
   # check if smart status is OK
-  if ( smartctl -H "${device}" | grep "PASSED" ); then
+  if ( smartctl -H "${device}" | grep "PASSED" > /dev/null ); then
     echo "SMART status:    OK!!!" | tee -a "${report}"
   else
     echo "SMART status:    FAIL!!!" | tee -a "${report}"
@@ -168,7 +168,7 @@ function burnin {
   do
     echo
     echo "Start badblocks with pattern ${test}"
-    badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}" > /dev/null
+    badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}" &>/dev/null
   done	
   bad_blocks=$(cat "${badblocks_log}" | wc -w)
   echo "Badblocks found: $bad_blocks" | tee -a "${report}"
