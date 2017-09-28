@@ -101,7 +101,7 @@ function burnin {
   echo "Sector Size:    " "${size_sector}" | tee -a "${report}"
 
   # Unmount all partition of the device | maybe it is not necessary
-  for n in "${device}"* ; do umount "$n" /dev/null 2>&1 ; done
+  for n in "${device}"* ; do umount "$n" &>/dev/null ; done
   
   # Erase partiton table, MBR, ecc | maybe it is not necessary
   wipefs -a "${device}" > /dev/null
@@ -128,7 +128,7 @@ function burnin {
 
   # start conveyance selftest, if the drive is capable
   echo
-  if ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." ); then
+  if ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." > /dev/null ); then
     echo "Conveyance Self-test is not supported"
   else
     smart_test 'conveyance' "${device}"
