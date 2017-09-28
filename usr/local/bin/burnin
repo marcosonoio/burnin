@@ -9,7 +9,7 @@ fi
 # no test is currently running.
 function get_smart_progress {
   local device="${1}"
-  locatl test_name="${2}"
+  local test_name="${2}"
   
   printf "${test_name} self-test: "
   smartctl -a "${device}" \
