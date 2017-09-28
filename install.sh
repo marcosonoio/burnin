@@ -18,7 +18,8 @@ if [ ! -f /etc/burnin ]; then
 fi
 
 config=$(cat /etc/burnin)
-echo "the path to save the report is:${config}"
+echo "the path to save the report is:"
+echo "${config}"
 echo
 read -rp $'Press enter to Continue...\n'
 exit
