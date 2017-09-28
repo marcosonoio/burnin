@@ -52,7 +52,7 @@ do
       1|2|3|4|5|6)
         if [ -n "${dev[$num]}" ]; then
         printf "\033c"
-        journalctl _PID="${pid[$num]}" -e -o json | jq -M -r '"\(.__REALTIME_TIMESTAMP | tonumber / 1000000) \(.MESSAGE)"' | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
+	jq -M -r '"\(.time | tonumber / 1000000) \(.msg)"' <<< "${log[$num]}" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
         fi
         ;;
       "quit")
