@@ -51,6 +51,8 @@ do
               since=$(systemctl status /dev/"${dev[${i}]}" | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
               echo "#${i} /dev/${dev[$i]} - ${sn} is running ${since}"
               bar "${sn}"
+	      echo
+	      echo
               pid[$i]=$(systemctl status burnin@"${dev[$i]}".service | grep "Main PID" | awk '{print $3}')
             fi
         else
