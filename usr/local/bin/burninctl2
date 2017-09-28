@@ -57,6 +57,7 @@ do
             fi
         else
             echo "#${i} empty or finished"
+	    echo
         fi
         i=$((i+1))
     done
