@@ -51,10 +51,23 @@ do
     case $num in
       1|2|3|4|5|6)
         if [ -n "${dev[$num]}" ]; then
-        printf "\033c"
-	jq -M -r '. select(.msg | contains("%progess%" | not ) ) | "\(.time | tonumber / 1000000) \(.msg)"' <<< "${log[$num]}" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
+          printf "\033c"
+	  jq -M -r '. select(.msg | contains("%progess%" | not ) ) | "\(.time | tonumber / 1000000) \(.msg)"' <<< "${log[$num]}" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
         fi
         ;;
+     "1stop"|"2stop"|"3stop"|"4stop"|"5stop"|"6stop")
+     	if [ -n "${dev[$num]}" ]; then
+	  printf "\033c"
+	  if ( systemctl stop burnin@"${dev[${num:0:1}]}".service ); then
+	     echo
+	     echo "STOPPED!!!"
+	  else
+	     echo
+	     echo "Some problem to STOP"
+	  fi
+	  echo
+	  echo
+	  read -p 'Press Enter to continue'
       "quit")
         exit
         ;;
