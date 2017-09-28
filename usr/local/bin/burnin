@@ -9,7 +9,9 @@ fi
 # no test is currently running.
 function get_smart_progress {
   local device="${1}"
-
+  locatl test_name="${2}"
+  
+  printf "${test_name} self-test: "
   smartctl -a "${device}" \
     | grep 'of test remaining' \
     | sed 's/^[[:blank:]]*//' \
@@ -30,7 +32,7 @@ function smart_test {
   while [ -n "${result}" ]; do
     echo "${result}"
     sleep 60
-    result="$(get_smart_progress "${device}")"
+    result="$(get_smart_progress "${device}" "${test_name}")"
   done
   sleep 60
 }
