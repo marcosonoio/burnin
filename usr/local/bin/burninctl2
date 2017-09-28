@@ -32,7 +32,7 @@ function bar {
 
 # get the path where is store report file, log and "run"
 working_dir="$(cat /etc/burnin)"
-conn=(ata1 ata2 ata3)
+conn=(ata1 ata2 ata3 ata4 ata5 ata6)
 
 while :
 do
@@ -43,7 +43,7 @@ do
     i=1
     for sata in ${conn[*]}
     do
-        dev[$i]=$(lsscsi | grep "${sata}" | awk 'NF>1{print $NF}' | cut -d "/" -f 3)
+        dev[$i]=$(lsscsi | grep -B 1 "${sata}" | head -1 | awk 'NF>1{print $NF}' | cut -d "/" -f 3)
         if [ -n "${dev[${i}]}" ]; then
             active=$(systemctl is-active burnin@"${dev[$i]}".service)
             if [[ "${active}" == "active" ]]; then
