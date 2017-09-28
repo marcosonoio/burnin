@@ -68,10 +68,9 @@ do
         if [ -n "${dev[$num]}" ]; then
         printf "\033c"
         journalctl _PID="${pid[$num]}" -e -o json | jq -M -r '"\(.__REALTIME_TIMESTAMP | tonumber / 1000000) \(.MESSAGE)"' | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
-        read -rsp $'Press enter to continue...\n'
         fi
         ;;
-      "q")
+      "quit")
         exit
         ;;
     esac
