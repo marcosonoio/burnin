@@ -62,12 +62,14 @@ function burnin {
  
   local device="/dev/${1}"
   local dev="${1}"
-  local progressArr=(2 16 33 50 67 84 98 99 100)
-  local testArr=('short' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read')
+  local progressArr=(0 2 16 33 50 67 84 98 99 100)
+  local testArr=('START' 'short' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read')
   run=0
   # exit if the device does not exist
   if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
-    
+  
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  
   # Aborting any running SMART tests on ${device}
   smartctl -X "${device}" &>/dev/null
   
@@ -143,7 +145,8 @@ function burnin {
       print_exit "${report}" "${dev}"
     fi
   fi
-  ((run++)) && echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  run=$((run + 1))
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # start the long selftest
   echo
@@ -156,7 +159,8 @@ function burnin {
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
     print_exit "${report}" "${dev}"
   fi
-  ((run++)) && echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  run=$((run + 1))
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
 
 
   # This section runs a _destructive_ write/read test on the device,
@@ -176,7 +180,8 @@ function burnin {
     echo
     echo "Start badblocks with pattern ${test}"
     badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}" &>/dev/null
-    ((run++)) && echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+    run=$((run + 1))
+    echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
 
   done	
   bad_blocks=$( wc -w <<< "${badblocks_log}" )
@@ -194,7 +199,8 @@ function burnin {
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
     print_exit "${report}" "${dev}"
   fi
-  ((run++)) && echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  run=$((run + 1))
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
 
 
   # get SMART attributes
@@ -213,12 +219,14 @@ function burnin {
   # write
   write_speed=$(dd if=/dev/zero of="${device}" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
   echo "Write Speed:     " "${write_speed}" | tee -a "${report}"
-  ((run++)) && echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  run=$((run + 1))
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   # read
   sync && echo 3 > /proc/sys/vm/drop_caches
   read_speed=$(dd if="${device}" of=/dev/null bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
   echo "Read Speed:      " "${read_speed}" | tee -a "${report}"
-  ((run++)) && echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  run=$((run + 1))
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # print the report and exit
   print_exit "${report}" "${dev}"
