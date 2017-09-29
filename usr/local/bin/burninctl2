@@ -4,7 +4,7 @@
 function ProgressBar {
         local declare -a progress=("${!1}")
 # Process data
-	let _done=${1}*4/10
+	let _done=${progress[1]}*4/10
 	let _left=50-$_done
 # Build progressbar string lengths
 	_done=$(printf "%${_done}s")
