@@ -31,7 +31,8 @@ do
     do
         dev[$i]=$(lsscsi -v | grep -B 1 "${sata}" | head -1 | awk 'NF>1{print $NF}' | cut -d "/" -f 3)
         if [ -n "${dev[${i}]}" ]; then
-            if ((since=$(systemctl status burnin@"${dev[$i]}".service | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//'))); then
+	    since=$(systemctl status burnin@"${dev[$i]}".service | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
+            if [ -n "${since}" ] ; then
               sn=$(smartctl -i /dev/"${dev[$i]}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
               echo "#${i} /dev/${dev[$i]} - ${sn} is running ${since}"
               pid[$i]=$(systemctl status burnin@"${dev[$i]}".service | grep "Main PID" | awk '{print $3}')
