@@ -46,6 +46,8 @@ function print_exit {
   
   echo " " | tee -a "${report}"
   echo "END at $(date)" | tee -a "${report}"
+  # prevent my stupid pos printer to crash
+  echo "-" | tee -a "${report}"
   
   # print the report with margins (default printer)
   lpr "${report}"
