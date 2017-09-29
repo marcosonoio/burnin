@@ -136,6 +136,9 @@ function burnin {
     echo "Conveyance Self-test is not supported"
     run=$((run + 1))
   else
+    run=$((run + 1))
+    echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+    
     smart_test 'conveyance' "${device}"
     
     # check if conveyance test is OK
@@ -145,8 +148,6 @@ function burnin {
       echo "Conveyance test: FAIL!!!" | tee -a "${report}"
       print_exit "${report}" "${dev}"
     fi
-    run=$((run + 1))
-    echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   fi
   run=$((run + 1))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
