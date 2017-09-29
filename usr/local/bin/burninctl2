@@ -2,7 +2,7 @@
 
 # progress bar https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
 function ProgressBar {
-        local declare -a progress=("${!1}")
+        local progress=("${!1}")
 # Process data
 	let _done=${progress[1]}*4/10
 	let _left=50-$_done
