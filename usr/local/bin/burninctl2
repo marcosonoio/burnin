@@ -37,7 +37,7 @@ do
               echo "#${i} /dev/${dev[$i]} - ${sn} is running ${since}"
               pid[$i]=$(systemctl status burnin@"${dev[$i]}".service | grep "Main PID" | awk '{print $3}')
               log[$i]=$(journalctl -u  burnin@"${dev[$i]}".service  _PID="${pid[$i]}" -e -o json | jq -M -r '. | {time: .__REALTIME_TIMESTAMP, msg: .MESSAGE}')
-              progress=($(jq -M -r '. select(.msg | contains("%progess%") ) | "\(.msg)"' <<< "${log[$i]}" | tail -1))
+              progress=($(jq -M -r 'select(.msg | contains("%progess%") ) | "\(.msg)"' <<< "${log[$i]}" | tail -1))
               ProgressBar "${progress[@]}"
 	      echo
             fi
@@ -53,7 +53,7 @@ do
       1|2|3|4|5|6)
         if [ -n "${dev[$num]}" ]; then
           printf "\033c"
-	  jq -M -r '. select(.msg | contains("%progess%" | not ) ) | "\(.time | tonumber / 1000000) \(.msg)"' <<< "${log[$num]}" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
+	  jq -M -r 'select(.msg | contains("%progess%" | not ) ) | "\(.time | tonumber / 1000000) \(.msg)"' <<< "${log[$num]}" | awk '{ $1=strftime("%b %d %T", $1); print $0; fflush(); }' | less +G
         fi
         ;;
      "1stop"|"2stop"|"3stop"|"4stop"|"5stop"|"6stop")
