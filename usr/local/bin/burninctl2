@@ -59,7 +59,7 @@ do
         fi
         ;;
      "1stop"|"2stop"|"3stop"|"4stop"|"5stop"|"6stop")
-     	if [ -n "${dev[$num]}" ]; then
+     	if [ -z "${dev[$num]}" ]; then
 	  printf "\033c"
 	  if ( systemctl stop burnin@"${dev[${num:0:1}]}".service ); then
 	     echo
