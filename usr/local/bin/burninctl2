@@ -65,9 +65,10 @@ do
 	     echo
 	     echo "Some problem to STOP"
 	  fi
-	  echo
-	  echo
-	  read -p 'Press Enter to continue'
+	fi
+	echo
+	echo
+	read -p 'Press Enter to continue'
 	;;
       "quit")
          exit
