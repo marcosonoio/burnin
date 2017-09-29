@@ -2,7 +2,8 @@
 
 # progress bar https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
 function ProgressBar {
-        declare -a _progress=("${!1}")
+        _progressArr=$1[@]
+	_progress=("${!_progressArr}")
 # Process data
 	let _done=${_progress[1]}*4/10
 	let _left=50-$_done
@@ -39,7 +40,7 @@ do
               log[$i]=$(journalctl -u  burnin@"${dev[$i]}".service  _PID="${pid[$i]}" -e -o json | jq -M -r '. | {time: .__REALTIME_TIMESTAMP, msg: .MESSAGE}')
               #progress=($(jq -M -r 'select(.msg | contains("%progess%") ) | "\(.msg)"' <<< "${log[$i]}" | tail -1))
 	      progress=($(jq -r -M 'select(.msg | contains("%progress%")) | "\(.msg)"' <<< ${log[$i]} | tail -1))
-              ProgressBar {progress[@]
+              ProgressBar progress
 	      echo
             fi
         else
