@@ -62,8 +62,8 @@ function burnin {
  
   local device="/dev/${1}"
   local dev="${1}"
-  local progressArr=(0 5 16 33 50 67 84 98 99 100)
-  local testArr=('short' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read' 'ENDING')
+  local progressArr=(0 2 5 16 33 50 67 84 98 99 100)
+  local testArr=('short' 'conv' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read' 'ENDING')
   run=0
   # exit if the device does not exist
   if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
@@ -129,11 +129,12 @@ function burnin {
     echo "Short test:      FAIL!!!" | tee -a "${report}"
     print_exit "${report}" "${dev}"
   fi
-
+  
   # start conveyance selftest, if the drive is capable
   echo
   if ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." > /dev/null ); then
     echo "Conveyance Self-test is not supported"
+    run=$((run + 1))
   else
     smart_test 'conveyance' "${device}"
     
@@ -144,6 +145,8 @@ function burnin {
       echo "Conveyance test: FAIL!!!" | tee -a "${report}"
       print_exit "${report}" "${dev}"
     fi
+    run=$((run + 1))
+    echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   fi
   run=$((run + 1))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
