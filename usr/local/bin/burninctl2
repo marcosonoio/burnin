@@ -2,9 +2,9 @@
 
 # progress bar https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
 function ProgressBar {
-        local progress=("${!1}")
+        declare -a _progress=("${!1}")
 # Process data
-	let _done=${progress[1]}*4/10
+	let _done=${_progress[1]}*4/10
 	let _left=50-$_done
 # Build progressbar string lengths
 	_done=$(printf "%${_done}s")
@@ -13,7 +13,7 @@ function ProgressBar {
 # 1.2 Build progressbar strings and print the ProgressBar line
 # 1.2.1 Output example:
 # 1.2.1.1 Progress : [########################################] 100%
-printf "\rProgress : [${_done// /#}${_left// /-}] ${progress[1]}%% - Run: ${progress[2]}\\n"
+printf "\rProgress : [${_done// /#}${_left// /-}] ${_progress[1]}%% - Run: ${_progress[2]}\\n"
 
 }
 
