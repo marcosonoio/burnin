@@ -64,8 +64,8 @@ function burnin {
  
   local device="/dev/${1}"
   local dev="${1}"
-  local progressArr=(0 2 5 16 33 50 67 84 98 99 100)
-  local testArr=('short' 'conv' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read' 'ENDING')
+  local progressArr=(0 2 5 16 33 50 67 84 95 98 100)
+  local testArr=('short' 'conv' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read' 'PRINTING')
   run=0
   # exit if the device does not exist
   if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
