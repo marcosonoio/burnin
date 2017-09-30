@@ -51,10 +51,6 @@ function print_exit {
   
   # print the report with margins (default printer)
   lpr "${report}"
-  
-  # power off the device, made with systemd
-  # echo 1 > "/sys/block/${dev}/device/delete"
-
   exit
 }
 
@@ -66,9 +62,11 @@ function burnin {
   local dev="${1}"
   local progressArr=(0 2 5 16 33 50 67 84 95 98 100)
   local testArr=('short' 'conv' 'long' 'badblock1' 'badblock2' 'badblock3' 'badblock4' 'long2' 'write' 'read' 'PRINTING')
-  run=0
+  local run=0
+  
   # exit if the device does not exist
   if [ ! -b "${device}" ]; then echo "${device} DOES NOT EXISTS"; exit; fi
+  
   
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
@@ -121,7 +119,6 @@ function burnin {
   fi
 
   # start short selftest
-  echo
   smart_test 'short' "${device}"
   
   # check if short test is OK
@@ -133,29 +130,32 @@ function burnin {
   fi
   
   # start conveyance selftest, if the drive is capable
-  echo
   if ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." > /dev/null ); then
-    echo "Conveyance Self-test is not supported"
     run=$((run + 1))
+    echo "Conveyance Self-test is not supported"
   else
     run=$((run + 1))
-    echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+    if ( smartctl -c "${device}" | grep "Conveyance Self-test supported." > /dev/null ); then
     
-    smart_test 'conveyance' "${device}"
+      echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+      
+      # start conveyance selftest
+      smart_test 'conveyance' "${device}"
     
-    # check if conveyance test is OK
-    if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" > /dev/null ); then
-      echo "Conveyance test: OK!!!" | tee -a "${report}"
-    else
-      echo "Conveyance test: FAIL!!!" | tee -a "${report}"
-      print_exit "${report}" "${dev}"
+      # check if conveyance test is OK
+      if (smartctl -l selftest "${device}" | grep "# 1" | grep "Conveyance" | grep "Completed without error" > /dev/null ); then
+        echo "Conveyance test: OK!!!" | tee -a "${report}"
+      else
+        echo "Conveyance test: FAIL!!!" | tee -a "${report}"
+        print_exit "${report}" "${dev}"
+      fi
     fi
   fi
+  
   run=$((run + 1))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # start the long selftest
-  echo
   smart_test 'long' "${device}"
   
   # check if long test is OK
@@ -165,13 +165,13 @@ function burnin {
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
     print_exit "${report}" "${dev}"
   fi
+  
   run=$((run + 1))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
 
 
   # This section runs a _destructive_ write/read test on the device,
   # exercising its memory cells and attempting to cause an early failure.
-  echo
   echo "Running destructive badblocks test"
   echo "Badblocks test can take up to 10 hours"
   cache_size=$(hdparm -I "${device}" | awk '/buffer size/ {print $4}')
@@ -188,29 +188,23 @@ function burnin {
     badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}" &>/dev/null
     run=$((run + 1))
     echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
-
   done	
   bad_blocks=$( wc -w <<< "${badblocks_log}" )
   echo "Badblocks found: ${bad_blocks}" | tee -a "${report}"
   echo "End of destructive badblocks test"
 
-  # run agarin long selftest
-  echo
+  # run 2° long selftest
   smart_test 'long' "${device}"
   
-  # check if second long test is OK
+  # check if 2° long test is OK
   if (smartctl -l selftest "${device}" | grep "# 1" | grep "Extended" | grep "Completed without error" > /dev/null ); then
     echo "2°Extended test: OK!!!" | tee -a "${report}"
   else
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
     print_exit "${report}" "${dev}"
   fi
-  run=$((run + 1))
-  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
-
-
+  
   # get SMART attributes
-  echo
   echo "SMART Attributes:" | tee -a "${report}"
   echo " " | tee -a "${report}"
 
@@ -221,16 +215,21 @@ function burnin {
     printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}"
   done
   
-  # Speed test
-  # write
-  write_speed=$(dd if=/dev/zero of="${device}" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
-  echo "Write Speed:     " "${write_speed}" | tee -a "${report}"
   run=$((run + 1))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
-  # read
+  
+  # write speed test
+  write_speed=$(dd if=/dev/zero of="${device}" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
+  echo "Write Speed:     " "${write_speed}" | tee -a "${report}"
+  
+  run=$((run + 1))
+  echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
+  
+  # read speed test
   sync && echo 3 > /proc/sys/vm/drop_caches
   read_speed=$(dd if="${device}" of=/dev/null bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
   echo "Read Speed:      " "${read_speed}" | tee -a "${report}"
+  
   run=$((run + 1))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
