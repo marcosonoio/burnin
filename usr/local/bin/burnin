@@ -212,7 +212,7 @@ function burnin {
   for line in "${!attributes[@]}"
   do
     IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
-    printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}"
+    printf "%25s %s\\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}"
   done
   
   (( run++ ))
