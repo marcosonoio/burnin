@@ -131,10 +131,10 @@ function burnin {
   
   # start conveyance selftest, if the drive is capable
   if ( smartctl -c "${device}" | grep "No Conveyance Self-test supported." > /dev/null ); then
-    run=$((run + 1))
+    (( run++ ))
     echo "Conveyance Self-test is not supported"
   else
-    run=$((run + 1))
+    (( run++ ))
     if ( smartctl -c "${device}" | grep "Conveyance Self-test supported." > /dev/null ); then
     
       echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
@@ -152,7 +152,7 @@ function burnin {
     fi
   fi
   
-  run=$((run + 1))
+  (( run++ ))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # start the long selftest
@@ -166,7 +166,7 @@ function burnin {
     print_exit "${report}" "${dev}"
   fi
   
-  run=$((run + 1))
+  (( run++ ))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
 
 
@@ -186,7 +186,7 @@ function burnin {
     echo
     echo "Start badblocks with pattern ${test}"
     badblocks -t "${test}" -ws -b "${size_sector}" -c "${blocks_num}" "${device}" -o "${badblocks_log}" &>/dev/null
-    run=$((run + 1))
+    (( run++ ))
     echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   done	
   bad_blocks=$( wc -w <<< "${badblocks_log}" )
@@ -215,14 +215,14 @@ function burnin {
     printf "%25s %s\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}"
   done
   
-  run=$((run + 1))
+  (( run++ ))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # write speed test
   write_speed=$(dd if=/dev/zero of="${device}" bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
   echo "Write Speed:     " "${write_speed}" | tee -a "${report}"
   
-  run=$((run + 1))
+  (( run++ ))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # read speed test
@@ -230,7 +230,7 @@ function burnin {
   read_speed=$(dd if="${device}" of=/dev/null bs=8k count=2621440 2>&1 | awk '/copied/ {print $10 " "  $11}')
   echo "Read Speed:      " "${read_speed}" | tee -a "${report}"
   
-  run=$((run + 1))
+  (( run++ ))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # print the report and exit
