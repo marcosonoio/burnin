@@ -244,6 +244,7 @@ if [ -z "${1}" ]; then
 fi
 
 # get the path to store report file, log and "run"
+# worgin_dir=$( grep "report_path" /etc/burnin | cut -d "=" -f 2 )
 working_dir="$(cat /etc/burnin)"
 
 # Run the burn-in and see how long it takes, just for fun.
