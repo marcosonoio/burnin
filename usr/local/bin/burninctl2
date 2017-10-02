@@ -39,7 +39,8 @@ while :
 do
     printf "\\033c"
     echo
-    echo  "${TC_BG}BURNIN HDD CONTROL PANEL${CLREOL}"
+    echo "${TC_BG}BURNIN HDD CONTROL PANEL${CLREOL}"
+    echo "${TC_RESET}"
     echo
     i=1
     for sata in ${conn[*]}
@@ -49,7 +50,7 @@ do
 	    since=$(systemctl status burnin@"${dev[$i]}".service | grep "active (running)" | cut -d ")" -f 2 | sed -e 's/^[ \t]*//')
             if [ -n "${since}" ] ; then
               sn=$(smartctl -i /dev/"${dev[$i]}" | grep "Serial Number" | cut -d ":" -f 2 | sed -e 's/^[ \t]*//')
-              echo "${TC_RESET}#${i} /dev/${dev[$i]} - ${sn}${TC_RESET} is running ${since}"
+              echo "${TC_BLD}#${i} /dev/${dev[$i]} - ${sn}${TC_RESET} is running ${since}"
               pid[$i]=$(systemctl status burnin@"${dev[$i]}".service | grep "Main PID" | awk '{print $3}')
               log[$i]=$(journalctl -u  burnin@"${dev[$i]}".service  _PID="${pid[$i]}" -e -o json | jq -M -r '. | {time: .__REALTIME_TIMESTAMP, msg: .MESSAGE}')
 	      progress=$(jq -r -M 'select(.msg | contains("%progress%")) | "\(.msg)"' <<< "${log[$i]}" | tail -1)
