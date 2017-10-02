@@ -12,7 +12,8 @@ install -m 755 etc/udev/rules.d/* /etc/udev/rules.d/
 install -m 755 etc/systemd/system/* /etc/systemd/system/
 install -m 755 usr/local/bin/* /usr/local/bin/
 
-read -r -p 'set directory path to save report ( /home/${SUDO_USER}/burnin ): ' config
+printf "set directory path to save report ( /home/${SUDO_USER}/burnin ): "
+read -r config
 if [ -n "${config}" ] ; then
    echo "report_path=${config}" > /etc/burnin
 else
