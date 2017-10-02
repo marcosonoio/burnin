@@ -6,7 +6,7 @@ if [ "${EUID}" -ne 0 ]; then
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "${DIR}"
+cd "${DIR}" || exit
 
 install -m 755 etc/udev/rules.d/* /etc/udev/rules.d/
 install -m 755 etc/systemd/system/* /etc/systemd/system/
