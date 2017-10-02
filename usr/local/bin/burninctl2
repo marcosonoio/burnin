@@ -7,11 +7,9 @@ fi
 
 # progress bar https://github.com/fearside/ProgressBar/blob/master/progressbar.sh
 function ProgressBar {
-  _progressArr="{$1}"
-  echo "${_progressArr}"
+  _progressArr="${1}"
   _progress=$(awk '{print $2}' <<< "${_progressArr}")
   _test=$(awk '{print $3}' <<< "${_progressArr}")
-  echo "${_progress} ${_test}"
   # Process data
   # let _done=${_progress[1]}*5/10
   _done=$(( _progress[1] * 5 / 10 ))
