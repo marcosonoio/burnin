@@ -189,7 +189,7 @@ function burnin {
     (( run++ ))
     echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   done	
-  bad_blocks=$( wc -w <<< "${badblocks_log}" )
+  bad_blocks=$( cat "${badblocks_log}" | wc -w )
   echo "Badblocks found: ${bad_blocks}" | tee -a "${report}"
   echo "End of destructive badblocks test"
 
