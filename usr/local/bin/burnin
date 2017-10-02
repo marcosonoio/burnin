@@ -49,7 +49,7 @@ function print_exit {
   # prevent my stupid pos printer to crash
   echo "-" | tee -a "${report}"
   
-  # print the report with margins (default printer)
+  # print the report (default printer)
   lpr "${report}"
   exit
 }
