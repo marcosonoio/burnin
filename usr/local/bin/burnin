@@ -105,6 +105,7 @@ function burnin {
   echo "Sector Size:    " "${size_sector}" | tee -a "${report}"
 
   # Unmount all partition of the device | maybe it is not necessary
+  sleep 60
   for n in "${device}"* ; do umount "$n" &>/dev/null ; done
   
   # Erase partiton table, MBR, ecc | maybe it is not necessary
