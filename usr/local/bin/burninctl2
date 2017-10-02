@@ -55,6 +55,7 @@ do
               pid[$i]=$(systemctl status burnin@"${dev[$i]}".service | grep "Main PID" | awk '{print $3}')
               log[$i]=$(journalctl -u  burnin@"${dev[$i]}".service  _PID="${pid[$i]}" -e -o json | jq -M -r '. | {time: .__REALTIME_TIMESTAMP, msg: .MESSAGE}')
 	      progress=$(jq -r -M 'select(.msg | contains("%progress%")) | "\(.msg)"' <<< "${log[$i]}" | tail -1)
+	      echo "${progress}"
               ProgressBar "${progress}"
 	      echo
             fi
