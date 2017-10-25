@@ -47,10 +47,16 @@ function print_exit {
   echo " " | tee -a "${report}"
   echo "END at $(date)" | tee -a "${report}"
   # prevent my stupid pos printer to crash
-  echo "-" | tee -a "${report}"
+  #echo "-" | tee -a "${report}"
+  
+  #convert to pdf
+  lpr -P PDF -o media=Custom.60x180mm "${report}"
+  
+  #remove old file
+  rm "${report}"*
   
   # print the report (default printer)
-  lpr "${report}"
+  lpr "${report}".pdf
   exit
 }
 
