@@ -49,10 +49,10 @@ function print_exit {
   # prevent my stupid pos printer to crash
   #echo "-" | tee -a "${report}"
   
-  #convert to pdf
+  # print to pdf
   lpr -P PDF -o media=Custom.60x180mm "${report}"
   
-  #remove old file
+  # remove old file
   rm "${report}"*
   
   # print the report (default printer)
