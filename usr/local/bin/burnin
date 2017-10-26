@@ -184,10 +184,10 @@ function burnin {
   echo "Running destructive badblocks test"
   echo "Badblocks test can take up to 10 hours"
   cache_size=$(hdparm -I "${device}" | awk '/buffer size/ {print $4}')
-  if [ "${cache_size}" == "unknown" ]; then
-	  blocks_num="1024"
-  else
+  if [[ "${cache_size}" =~ ^-?[0-9]+$ ]]; then
 	  blocks_num=$(( cache_size * 1024 / 4 / size_sector ))
+  else
+	  blocks_num="1024"
   fi
   test_pattern=(0xaa 0x55 0xff 0x00)
   for test in "${test_pattern[@]}"
