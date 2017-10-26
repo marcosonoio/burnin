@@ -11,7 +11,7 @@ function ProgressBar {
   _progress=$(awk '{print $2}' <<< "${_progressArr}")
   _test=$(awk '{print $3}' <<< "${_progressArr}")
   # Process data
-  let _done=${_progress[1]}*5/10
+  let _done=${_progress}*5/10
   # _done=$(( _progress[1] * 5 / 10 ))
   let _left=50-$_done
   # _left=$(( 50 - _done ))
