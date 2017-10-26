@@ -52,11 +52,13 @@ function print_exit {
   # print to pdf
   lpr -P PDF -o media=Custom.60x180mm "${report}"
   
-  # remove old file
-  rm "${report}"*
-  
   # print the report (default printer)
-  lpr "${report}".pdf
+  lpr "${report}.pdf"
+  
+  # remove old file
+  rm "${report}"
+  rm "${report}_badblocks"
+  
   exit
 }
 
