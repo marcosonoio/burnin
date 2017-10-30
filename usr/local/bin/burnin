@@ -52,6 +52,8 @@ function print_exit {
   # print to pdf
   lpr -P PDF -o media=Custom.60x180mm "${report}"
   
+  sleep 5
+  
   # print the report (default printer)
   lpr "${report}.pdf"
   
