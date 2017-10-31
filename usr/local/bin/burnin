@@ -58,8 +58,8 @@ function print_exit {
   lpr "${report}.pdf"
   
   # remove old file
-  # rm "${report}"
-  # rm "${report}_badblocks"
+  rm "${report}"
+  rm "${report}_badblocks"
   
   exit
 }
