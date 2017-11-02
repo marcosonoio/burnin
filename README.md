@@ -13,3 +13,4 @@ DEPENDENCIES:
 - smartmontools
 - jq (burninctl)
 - gawk (burninctl)
+- cups-pdf
