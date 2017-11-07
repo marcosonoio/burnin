@@ -64,6 +64,20 @@ function print_exit {
   exit
 }
 
+function smart_attributes {
+  local report="${1}"
+  local device="${2}"
+  echo "SMART Attributes:" | tee -a "${report}"
+  echo " " | tee -a "${report}"
+
+  mapfile -t attributes < <(smartctl -A "${device}" | sed -n '/ID/,$p' | sed 1d)
+  for line in "${!attributes[@]}"
+  do
+    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
+    printf "%25s %s\\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}"
+  done
+}
+
 # Run a succession of SMART tests and badblocks on a device, and output the
 # final results when complete.
 function burnin {
@@ -126,6 +140,7 @@ function burnin {
     echo "SMART status:    OK!!!" | tee -a "${report}"
   else
     echo "SMART status:    FAIL!!!" | tee -a "${report}"
+    smart_attributes "${report}" "${device}"
     print_exit "${report}" "${dev}"
   fi
 
@@ -137,6 +152,7 @@ function burnin {
     echo "Short test:      OK!!!" | tee -a "${report}"
   else
     echo "Short test:      FAIL!!!" | tee -a "${report}"
+    smart_attributes "${report}" "${device}"
     print_exit "${report}" "${dev}"
   fi
   
@@ -158,6 +174,7 @@ function burnin {
         echo "Conveyance test: OK!!!" | tee -a "${report}"
       else
         echo "Conveyance test: FAIL!!!" | tee -a "${report}"
+	smart_attributes "${report}" "${device}"
         print_exit "${report}" "${dev}"
       fi
     fi
@@ -174,6 +191,7 @@ function burnin {
     echo "Extended test:   OK!!!" | tee -a "${report}"
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
+    smart_attributes "${report}" "${device}"
     print_exit "${report}" "${dev}"
   fi
   
@@ -212,20 +230,13 @@ function burnin {
     echo "2°Extended test: OK!!!" | tee -a "${report}"
   else
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
+    smart_attributes "${report}" "${device}"
     print_exit "${report}" "${dev}"
   fi
   
   # get SMART attributes
-  echo "SMART Attributes:" | tee -a "${report}"
-  echo " " | tee -a "${report}"
-
-  mapfile -t attributes < <(smartctl -A "${device}" | sed -n '/ID/,$p' | sed 1d)
-  for line in "${!attributes[@]}"
-  do
-    IFS=' ' read -r -a att_rows <<< "${attributes[line]}"
-    printf "%25s %s\\n" "${att_rows[1]}" "${att_rows[9]}" | tee -a "${report}"
-  done
-  
+  smart_attributes "${report}" "${device}"
+   
   (( run++ ))
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
