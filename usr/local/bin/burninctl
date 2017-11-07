@@ -90,8 +90,7 @@ do
       "1smart"|"2smart"|"3smart"|"4smart"|"5smart"|"6smart")
      	if [ -n "${dev[${num:0:1}]}" ]; then
 	  printf "\\033c"
-	  echo "${dev[${num:0:1}]}"
-          smartctl -A "${dev[${num:0:1}]}" | sed -n '/ID/,$p' | sed 1d
+          smartctl -A "/dev/${dev[${num:0:1}]}" | sed -n '/ID/,$p' | sed 1d
 	fi
 	echo
 	echo
