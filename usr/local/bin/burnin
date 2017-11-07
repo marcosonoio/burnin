@@ -50,7 +50,7 @@ function print_exit {
   #echo "-" | tee -a "${report}"
   
   # print to pdf
-  lpr -P PDF -o media=Custom.56x118mm "${report}"
+  lpr -P PDF -o media=Custom.58x180mm "${report}"
   
   sleep 5
   
