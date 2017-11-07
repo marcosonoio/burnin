@@ -87,6 +87,15 @@ do
 	echo
 	read -r -p 'Press Enter to continue'
 	;;
+      "1smart"|"2smart"|"3smart"|"4smart"|"5smart"|"6smart")
+     	if [ -n "${dev[${num:0:1}]}" ]; then
+	  printf "\\033c"
+          smartctl -A "${dev[${num:0:1}]}" | sed -n '/ID/,$p' | sed 1d
+	fi
+	echo
+	echo
+	read -r -p 'Press Enter to continue'
+	;;
       "quit")
          exit
        ;;
