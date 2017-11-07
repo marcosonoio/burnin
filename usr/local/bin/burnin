@@ -42,7 +42,6 @@ function smart_test {
 # Print the the report, power off the drive and remove the "run" file
 function print_exit {
   local report="${1}"
-  local dev="${2}"
   
   echo " " | tee -a "${report}"
   echo "END at $(date)" | tee -a "${report}"
@@ -115,7 +114,7 @@ function burnin {
     smartctl --smart=on "${device}" > /dev/null
   else
     echo "SMART support is not Available" | tee -a "${report}"
-    print_exit "${report}" "${dev}"
+    print_exit "${report}"
   fi
   
   # start the true test
@@ -141,7 +140,7 @@ function burnin {
   else
     echo "SMART status:    FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}" "${dev}"
+    print_exit "${report}"
   fi
 
   # start short selftest
@@ -153,7 +152,7 @@ function burnin {
   else
     echo "Short test:      FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}" "${dev}"
+    print_exit "${report}"
   fi
   
   # start conveyance selftest, if the drive is capable
@@ -175,7 +174,7 @@ function burnin {
       else
         echo "Conveyance test: FAIL!!!" | tee -a "${report}"
 	smart_attributes "${report}" "${device}"
-        print_exit "${report}" "${dev}"
+        print_exit "${report}"
       fi
     fi
   fi
@@ -192,7 +191,7 @@ function burnin {
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}" "${dev}"
+    print_exit "${report}"
   fi
   
   (( run++ ))
@@ -231,7 +230,7 @@ function burnin {
   else
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}" "${dev}"
+    print_exit "${report}"
   fi
   
   # get SMART attributes
@@ -256,7 +255,7 @@ function burnin {
   echo "%progress% ${progressArr[$run]} ${testArr[$run]}"
   
   # print the report and exit
-  print_exit "${report}" "${dev}"
+  print_exit "${report}"
 
 }
 
@@ -270,4 +269,4 @@ working_dir=$( grep "report_path" /etc/burnin | cut -d "=" -f 2 )
 #working_dir="$(cat /etc/burnin)"
 
 # Run the burn-in and see how long it takes, just for fun.
-time burnin "${1}"
+burnin "${1}"
