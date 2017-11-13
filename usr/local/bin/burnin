@@ -139,7 +139,7 @@ function burnin {
     echo "SMART status:    OK!!!" | tee -a "${report}"
   else
     echo "SMART status:    FAIL!!!" | tee -a "${report}"
-    smart_attributes "${report}" "${device}"
+    # smart_attributes "${report}" "${device}"
     # print_exit "${report}"
   fi
 
@@ -151,7 +151,7 @@ function burnin {
     echo "Short test:      OK!!!" | tee -a "${report}"
   else
     echo "Short test:      FAIL!!!" | tee -a "${report}"
-    smart_attributes "${report}" "${device}"
+    # smart_attributes "${report}" "${device}"
     # print_exit "${report}"
   fi
   
@@ -173,7 +173,7 @@ function burnin {
         echo "Conveyance test: OK!!!" | tee -a "${report}"
       else
         echo "Conveyance test: FAIL!!!" | tee -a "${report}"
-	smart_attributes "${report}" "${device}"
+	# smart_attributes "${report}" "${device}"
         # print_exit "${report}"
       fi
     fi
@@ -190,7 +190,7 @@ function burnin {
     echo "Extended test:   OK!!!" | tee -a "${report}"
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
-    smart_attributes "${report}" "${device}"
+    # smart_attributes "${report}" "${device}"
     # print_exit "${report}"
   fi
   
@@ -229,7 +229,7 @@ function burnin {
     echo "2°Extended test: OK!!!" | tee -a "${report}"
   else
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
-    smart_attributes "${report}" "${device}"
+    # smart_attributes "${report}" "${device}"
     # print_exit "${report}"
   fi
   
