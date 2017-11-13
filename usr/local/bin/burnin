@@ -140,7 +140,7 @@ function burnin {
   else
     echo "SMART status:    FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}"
+    # print_exit "${report}"
   fi
 
   # start short selftest
@@ -152,7 +152,7 @@ function burnin {
   else
     echo "Short test:      FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}"
+    # print_exit "${report}"
   fi
   
   # start conveyance selftest, if the drive is capable
@@ -174,7 +174,7 @@ function burnin {
       else
         echo "Conveyance test: FAIL!!!" | tee -a "${report}"
 	smart_attributes "${report}" "${device}"
-        print_exit "${report}"
+        # print_exit "${report}"
       fi
     fi
   fi
@@ -191,7 +191,7 @@ function burnin {
   else
     echo "Extended test:   FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}"
+    # print_exit "${report}"
   fi
   
   (( run++ ))
@@ -230,7 +230,7 @@ function burnin {
   else
     echo "2°Extended test: FAIL!!!" | tee -a "${report}"
     smart_attributes "${report}" "${device}"
-    print_exit "${report}"
+    # print_exit "${report}"
   fi
   
   # get SMART attributes
