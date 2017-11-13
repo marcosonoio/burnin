@@ -64,7 +64,7 @@ do
         (( i++ ))
     done
     echo
-    read -r -t 10 -p $'Press Enter to refresh, or insert the number of the the device to show the log: ' num
+    read -r -t 20 -p $'Press Enter to refresh, or insert the number of the the device to show the log: ' num
     case $num in
       1|2|3|4|5|6)
         if [ -n "${dev[$num]}" ]; then
