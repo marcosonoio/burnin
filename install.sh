@@ -26,6 +26,11 @@ fi
 #  echo "${config}" > /etc/burnin
 #fi
 
+# reloade systemd and udev files
+systemctl daemon-reload
+udevadm control --reload-rules
+udevadm trigger
+
 config=$(cat /etc/burnin)
 echo "the path to save the report is:"
 echo "${config}"
